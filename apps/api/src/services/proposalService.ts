@@ -14,6 +14,7 @@ import {
   proposalPayloadSchema,
   type Proposal,
   type ProposalKind,
+  type ProposalStatus,
 } from '@meetingops/contracts';
 import { idFactory } from '../ids.js';
 import {
@@ -237,7 +238,7 @@ export class ProposalService {
     }
     const change = parsedChanges.data;
 
-    let newKind: ProposalKind = original.kind;
+    const newKind: ProposalKind = original.kind;
     let newPayload: unknown;
 
     if (original.kind === 'meeting_create' && parsedOriginal.data.kind === 'meeting_create') {
@@ -727,7 +728,14 @@ export class ProposalService {
     return count;
   }
 
-  async listProposals(_ctx: ActorContext, filter: { status?: import('@meetingops/contracts').ProposalStatus; baseMeetingId?: string; projectId?: string }): Promise<Proposal[]> {
+  async listProposals(
+    _ctx: ActorContext,
+    filter: {
+      status?: ProposalStatus;
+      baseMeetingId?: string;
+      projectId?: string;
+    },
+  ): Promise<Proposal[]> {
     return this.repos().proposals.list(filter);
   }
 

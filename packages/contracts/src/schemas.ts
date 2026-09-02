@@ -407,6 +407,12 @@ export const searchSlotsRequestSchema = z.strictObject({
   participantIds: z.array(idSchema).min(1).max(20),
 });
 
+export const checkSlotRequestSchema = z.strictObject({
+  startAt: isoDateTimeSchema,
+  durationMinutes: durationSchema,
+  participantIds: z.array(idSchema).min(1).max(20),
+});
+
 export const resetDemoRequestSchema = z.strictObject({});
 
 /* ------------------------------------------------------------------ */
