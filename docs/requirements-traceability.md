@@ -149,7 +149,7 @@ Status legend:
 | US-07 | Approved plan becomes persisted meeting/agenda state | Execution service | Integration test | 1:50–2:10 | PASS |
 | US-08 | Record decisions and action items linked to meeting | Outcomes endpoints + UI | Integration test | 2:10–2:35 | PASS |
 | US-09 | Assign owners and due dates | Action assignment | Unit + integration | Owners on payment blocker | PASS |
-| US-10 | Follow-up informed by unresolved actions/decisions | Follow-up proposal flow | Integration test | 2:35–2:55 | PASS |
+| US-10 | Follow-up informed by unresolved actions/decisions | Follow-up proposal flow | Integration test: `apps/api/src/integration/followups.test.ts` | 2:35–2:55 | PASS |
 | US-11 | Confirmation that persisted state matches approved plan | Verification service + UI | Integration test | verify_meeting_state output | PASS |
 | US-12 | See what agent proposed, human approved, executed | Audit timeline UI | Integration test | Agent activity panel | PASS |
 | FR-1 | Meeting lifecycle statuses explicit; transitions validated | Transition map in domain | Unit tests | Status badges | PASS |
