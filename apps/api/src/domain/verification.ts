@@ -6,7 +6,11 @@
  * `executeProposal` (transactional verification) and by the
  * `verify_meeting_state` tool (standalone re-verification).
  */
-import type { MeetingStatus } from '@meetingops/contracts';
+import type {
+  MeetingStatus,
+  VerificationCheck,
+  VerificationReport,
+} from '@meetingops/contracts';
 
 export interface PersistedMeetingSnapshot {
   readonly id: string;
@@ -20,25 +24,15 @@ export interface PersistedMeetingSnapshot {
   readonly revision: number;
 }
 
+/** Re-export shared verification shapes for local convenience. */
+export type { VerificationCheck, VerificationReport } from '@meetingops/contracts';
+
 export interface VerificationExpectation {
   readonly status?: MeetingStatus;
   readonly agendaContains?: readonly string[];
   readonly actionItemTitles?: readonly string[];
   readonly participantIds?: readonly string[];
   readonly minimumAgendaItems?: number;
-}
-
-export interface VerificationCheck {
-  readonly name: string;
-  readonly expected: unknown;
-  readonly actual: unknown;
-  readonly pass: boolean;
-}
-
-export interface VerificationReport {
-  readonly ok: boolean;
-  readonly checkedAt: string;
-  readonly checks: readonly VerificationCheck[];
 }
 
 export function verifyMeetingSnapshot(

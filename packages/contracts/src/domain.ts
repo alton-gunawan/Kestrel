@@ -66,3 +66,18 @@ export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
 /** Tool classification used for annotations and for the Agent Activity panel. */
 export type ToolSideEffect = 'read' | 'propose' | 'mutate' | 'verify';
+
+/** One named check from a verification run (shared API + UI shape). */
+export interface VerificationCheck {
+  readonly name: string;
+  readonly pass: boolean;
+  readonly expected?: unknown;
+  readonly actual?: unknown;
+}
+
+/** Structured verification report produced by execute/verify (D-026). */
+export interface VerificationReport {
+  readonly ok: boolean;
+  readonly checkedAt: string;
+  readonly checks: readonly VerificationCheck[];
+}

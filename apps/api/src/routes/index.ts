@@ -590,6 +590,21 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
 
   /* ------------------------------ activity ------------------------------- */
 
+  app.get('/api/decisions', async (request) => {
+    await requireUser(repos, request);
+    const query = request.query as Record<string, string | undefined>;
+    if (query.meetingId) {
+      const rows = await db.sql`select * from decisions where meeting_id = ${query.meetingId} order by recorded_at desc limit 50`;
+      return { decisions: rows };
+    }
+    if (query.projectId) {
+      const rows = await db.sql`select d.* from decisions d join meetings m on m.id = d.meeting_id where m.project_id = ${query.projectId} order by d.recorded_at desc limit 50`;
+      return { decisions: rows };
+    }
+    const rows = await db.sql`select * from decisions order by recorded_at desc limit 50`;
+    return { decisions: rows };
+  });
+
   app.get('/api/activity', async (request) => {
     await requireUser(repos, request);
     const query = request.query as Record<string, string | undefined>;

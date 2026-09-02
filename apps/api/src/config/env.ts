@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 
-const envSchema = z.strictObject({
+const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   API_HOST: z.string().min(1).default('127.0.0.1'),
   API_PORT: z.coerce.number().int().min(1).max(65535).default(8787),
@@ -22,8 +22,17 @@ const envSchema = z.strictObject({
 
 export type Env = z.infer<typeof envSchema>;
 
+const KNOWN_ENV_KEYS = envSchema.keyof().options;
+
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const parsed = envSchema.safeParse(source);
+  // Select only known keys: process.env always carries unrelated platform
+  // variables, which must not fail validation. Unknown *known-key-like*
+  // input is still rejected by the strict per-key schemas.
+  const subset: Record<string, string | undefined> = {};
+  for (const key of KNOWN_ENV_KEYS) {
+    if (source[key] !== undefined) subset[key] = source[key];
+  }
+  const parsed = envSchema.safeParse(subset);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `${i.path.join('.')}: ${i.message}`)

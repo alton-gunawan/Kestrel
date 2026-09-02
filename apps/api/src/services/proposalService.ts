@@ -15,6 +15,7 @@ import {
   type Proposal,
   type ProposalKind,
   type ProposalStatus,
+  type VerificationReport,
 } from '@meetingops/contracts';
 import { idFactory } from '../ids.js';
 import {
@@ -27,7 +28,6 @@ import {
   expectationsFromProposalPayload,
   verifyMeetingSnapshot,
   type VerificationExpectation,
-  type VerificationReport,
 } from '../domain/verification.js';
 import type { ActorContext } from './actorContext.js';
 import { actorRefFor, actorTypeFor, SYSTEM_CONTEXT } from './actorContext.js';

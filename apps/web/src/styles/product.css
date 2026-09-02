@@ -1,0 +1,11 @@
+/* Product styles (StyleX generates class layers; this file carries resets the
+   product owns plus CSS-layer declarations the Astryx plugin expects). */
+@layer astryx-base, product;
+
+:root {
+  --meetingops-sidebar-width: 232px;
+}
+
+body {
+  margin: 0;
+}
