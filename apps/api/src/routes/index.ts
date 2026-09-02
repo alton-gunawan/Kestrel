@@ -34,8 +34,6 @@ import { MeetingService, AgendaService, DecisionService, ActionItemService, Foll
 import { ProposalService } from '../services/proposalService.js';
 import { hashString } from '../ids.js';
 import { runSeed, resetToGoldenDemo } from '../seed/goldenDemo.js';
-import { withTransaction } from '../db/client.js';
-import { createRepos } from '../repositories/drizzle.js';
 
 interface RouteOptions {
   readonly env: Env;
@@ -625,7 +623,15 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
 
   /* --------------------------- demo seed/reset --------------------------- */
 
+  // Demo controls exist for the golden demo (dev/test and demo deployments).
+  // In production they are refused unless the operator explicitly re-enables
+  // them, because resetToGoldenDemo truncates and rewrites the dataset.
+  const demoRoutesEnabled = env.NODE_ENV !== 'production' || env.ENABLE_DEMO_ROUTES === true;
+
   app.post('/api/demo/reset', async (request, reply) => {
+    if (!demoRoutesEnabled) {
+      throw new AppError('FORBIDDEN', 'Demo routes are disabled in production');
+    }
     resetDemoRequestSchema.parse(request.body ?? {});
     await resetToGoldenDemo(env.DATABASE_URL);
     const { sessionId, cookie } = await createSession(repos, env.DEMO_USER_ID);
@@ -635,12 +641,12 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
   });
 
   app.post('/api/demo/seed', async () => {
+    if (!demoRoutesEnabled) {
+      throw new AppError('FORBIDDEN', 'Demo routes are disabled in production');
+    }
     await runSeed(env.DATABASE_URL, { reset: false });
     return { ok: true };
   });
-
-  void withTransaction;
-  void createRepos;
 }
 
 /**

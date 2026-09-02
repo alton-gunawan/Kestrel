@@ -28,6 +28,7 @@ export async function createTestApp(): Promise<TestApp> {
       NODE_ENV: 'test',
       DEMO_USER_ID: 'usr_alex',
       AUTO_SEED: false,
+      ENABLE_DEMO_ROUTES: true,
       LOG_LEVEL: 'error',
     },
   });
