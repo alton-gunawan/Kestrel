@@ -1,0 +1,17 @@
+{
+  "name": "@meetingops/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:a11y": "playwright test --grep @a11y",
+    "test:webmcp": "playwright test --grep @webmcp",
+    "test:golden": "playwright test --grep @golden",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.62.1"
+  }
+}

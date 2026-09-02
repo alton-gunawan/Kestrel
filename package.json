@@ -1,0 +1,44 @@
+{
+  "name": "meetingops",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.14.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@astryxdesign/core",
+      "esbuild"
+    ]
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @meetingops/contracts build && pnpm --parallel --filter @meetingops/api --filter @meetingops/web dev",
+    "dev:api": "pnpm --filter @meetingops/contracts build && pnpm --filter @meetingops/api dev",
+    "dev:web": "pnpm --filter @meetingops/web dev",
+    "build": "pnpm --filter @meetingops/contracts build && pnpm -r --filter !@meetingops/contracts build",
+    "build:web": "pnpm --filter @meetingops/contracts build && pnpm --filter @meetingops/web build",
+    "build:api": "pnpm --filter @meetingops/contracts build && pnpm --filter @meetingops/api build",
+    "preview": "pnpm --filter @meetingops/web preview",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "test": "pnpm --filter @meetingops/contracts test && pnpm --filter @meetingops/contracts build && pnpm --filter @meetingops/api test",
+    "test:watch": "pnpm --filter @meetingops/contracts build && pnpm --filter @meetingops/api test:watch",
+    "test:e2e": "pnpm --filter @meetingops/e2e test",
+    "test:a11y": "pnpm --filter @meetingops/e2e test:a11y",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "db:generate": "pnpm --filter @meetingops/api db:generate",
+    "db:migrate": "pnpm --filter @meetingops/api db:migrate",
+    "db:seed": "pnpm --filter @meetingops/api db:seed",
+    "audit:deps": "node scripts/audit-deps.mjs"
+  },
+  "devDependencies": {
+    "@babel/core": "8.0.1",
+    "@types/node": "26.4.1",
+    "eslint": "10.9.1",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.69.0"
+  }
+}
