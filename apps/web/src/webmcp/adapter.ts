@@ -204,7 +204,26 @@ export function isWebmcpNativelySupported(): boolean {
   );
 }
 
+/**
+ * Module-level guard: registration is per-document and must be idempotent.
+ * React StrictMode (dev) double-invokes effects, and Chrome's native
+ * ModelContext throws "Duplicate tool name" if the same tool registers twice.
+ */
+let registrationPromise: Promise<WebmcpRegistrationResult> | null = null;
+
 export async function registerAllTools(): Promise<WebmcpRegistrationResult> {
+  if (registrationPromise) return registrationPromise;
+  registrationPromise = doRegisterAllTools();
+  try {
+    return await registrationPromise;
+  } catch (err) {
+    // Allow a retry after a hard failure (e.g. transient context loss).
+    registrationPromise = null;
+    throw err;
+  }
+}
+
+async function doRegisterAllTools(): Promise<WebmcpRegistrationResult> {
   const errors: string[] = [];
   const registeredTools: string[] = [];
 
@@ -213,7 +232,21 @@ export async function registerAllTools(): Promise<WebmcpRegistrationResult> {
     return { mode: 'unavailable', registeredTools, errors: ['document.modelContext is not available'] };
   }
 
+  // Pre-existing tools (e.g. re-entering the page without a reload, or a
+  // host that preserves the context) must not be registered twice.
+  let alreadyRegistered: Set<string> = new Set();
+  try {
+    const existing = await modelContext.getTools();
+    alreadyRegistered = new Set(existing.map((t) => t.name));
+  } catch {
+    // getTools() unsupported → assume none are registered.
+  }
+
   for (const name of REQUIRED_TOOL_NAMES) {
+    if (alreadyRegistered.has(name)) {
+      registeredTools.push(name);
+      continue;
+    }
     const def = getToolDefinition(name) as ToolDefinition;
     if (!def) {
       errors.push(`No catalog definition for tool ${name}`);

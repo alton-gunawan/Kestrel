@@ -50,6 +50,8 @@ export function WebmcpStatusProvider({ children }: { children: ReactNode }): Rea
         return;
       }
       const result: WebmcpRegistrationResult = await registerAllTools();
+      // Registration is idempotent (module-level promise + getTools() check),
+      // so StrictMode's double effect and native duplicate detection agree.
       if (cancelled) return;
       setStatus({
         mode,
