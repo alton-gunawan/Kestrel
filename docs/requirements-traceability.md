@@ -118,7 +118,7 @@ Status legend:
 | DEMO-6 | Explicit approval boundary (Review → Approve) | Approval UX (UX-7) | E2E approval test | 1:35–1:50 | PASS |
 | DEMO-7 | WebMCP execution: create_meeting, create_agenda_item, verify_meeting_state | Mutating tools + verification | WebMCP + E2E | 1:50–2:10 | PASS |
 | DEMO-8 | Outcomes: decisions and action items connected to project | Outcomes tab + action creation | E2E | 2:10–2:35 | PASS |
-| DEMO-9 | Continuity: follow-up suggestion (payment blocker → Friday check-in) | Follow-up proposal + UI | E2E | 2:35–2:55 | PASS |
+| DEMO-9 | Continuity: follow-up suggestion (payment blocker → Friday check-in) | Follow-up proposal + UI | E2E + `apps/api/src/integration/followups.test.ts` (propose→approve→execute→verify + supersede) | 2:35–2:55 | PASS |
 | DEMO-10 | Deterministic seed; reset button/route; no signup; no external calendar; no fake logs | Reset endpoint + Settings UI + honest activity | Reset determinism test | Reset reproducibility | PASS |
 
 ## 7. Testing & verification (07_TEST_AND_VERIFICATION)

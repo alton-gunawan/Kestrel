@@ -24,7 +24,8 @@ claim classes from `docs/07_TEST_AND_VERIFICATION.md` are kept separate:
 | Typecheck (all packages) | `pnpm typecheck` | PASS (0 errors) |
 | Lint | `pnpm lint` (eslint 10 flat config) | PASS (0 problems) |
 | Contracts tests | `pnpm --filter @meetingops/contracts test` | PASS |
-| API unit + integration | `pnpm --filter @meetingops/api test` (Vitest, real PostgreSQL `meetingops_test`) | PASS — 56 tests / 4 files |
+| API unit + integration | `pnpm --filter @meetingops/api test` (Vitest, real PostgreSQL `meetingops_test`) | PASS — 58 tests / 5 files (incl. follow-up leg of the approval loop) |
+| Clean-DB migration proof | scratch database + `pnpm db:migrate` (`drizzle/0000_*.sql` via migration runner) | PASS — 13 tables created from empty database, runner verified |
 | E2E golden | `npx playwright test tests/golden.spec.ts` | PASS — 3 tests |
 | E2E WebMCP contract | `npx playwright test tests/webmcp.spec.ts` | PASS — 5 tests |
 | E2E accessibility | `npx playwright test tests/a11y.spec.ts` (axe-core + keyboard) | PASS — 5 tests, 0 serious/critical violations |
