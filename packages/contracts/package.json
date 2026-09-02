@@ -28,6 +28,10 @@
       "types": "./dist/jsonschema.d.ts",
       "default": "./dist/jsonschema.js"
     },
+    "./integrations": {
+      "types": "./dist/integrations.d.ts",
+      "default": "./dist/integrations.js"
+    },
     "./webmcp-tools": {
       "types": "./dist/webmcp-tool-catalog.d.ts",
       "default": "./dist/webmcp-tool-catalog.js"
