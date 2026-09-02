@@ -25,13 +25,13 @@ export function createDb(databaseUrl: string): DbHandle {
   return { sql, db };
 }
 
-/** Run `fn` inside a transaction; rolls back on throw. */
+/**
+ * Run `fn` inside a transaction; rolls back on throw. Used so that
+ * apply + verify + audit execute atomically (D-026).
+ */
 export async function withTransaction<T>(
   handle: DbHandle,
   fn: (tx: Database) => Promise<T>,
 ): Promise<T> {
-  return handle.sql.begin(async (txSql) => {
-    const tx = drizzle(txSql, { schema });
-    return fn(tx as Database);
-  });
+  return handle.db.transaction(async (tx) => fn(tx as Database));
 }

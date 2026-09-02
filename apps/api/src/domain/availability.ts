@@ -152,7 +152,7 @@ export interface SlotFeasibility {
 
 export function checkSlotFeasibility(
   startMs: number,
-  durationMinutes: number,
+  _durationMinutes: number,
   endMs: number,
   participants: readonly Participant[],
   busy: readonly BusyInterval[],

@@ -14,7 +14,7 @@ export interface WorkingHours {
   /** Minutes from local midnight, exclusive. */
   readonly endMinute: number;
   /** Weekdays (0=Sunday..6=Saturday) on which these hours apply. */
-  readonly workdays: readonly number[];
+  readonly workdays: number[];
 }
 
 export interface FocusBlock {

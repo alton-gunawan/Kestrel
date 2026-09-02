@@ -1,0 +1,31 @@
+/**
+ * Execution context: who is acting, through which channel. The user comes
+ * from the server-side session; the channel is non-authoritative metadata
+ * used only for audit/actor classification (D-011). Authorization NEVER
+ * depends on it — the channel cannot grant permissions the session lacks.
+ */
+export type Channel = 'ui' | 'webmcp' | 'system';
+
+export interface ActorContext {
+  /** Authenticated user id (from signed session cookie, server-side only). */
+  readonly userId: string;
+  readonly requestId: string;
+  readonly channel: Channel;
+}
+
+export function actorTypeFor(ctx: ActorContext): 'human' | 'agent' | 'system' {
+  if (ctx.channel === 'webmcp') return 'agent';
+  if (ctx.channel === 'system') return 'system';
+  return 'human';
+}
+
+export function actorRefFor(ctx: ActorContext): string {
+  return `user:${ctx.userId}`;
+}
+
+/** Context for internal deterministic checks (never audits, never authorizes). */
+export const SYSTEM_CONTEXT: ActorContext = {
+  userId: 'system',
+  requestId: 'internal',
+  channel: 'system',
+};
