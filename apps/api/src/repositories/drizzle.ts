@@ -17,6 +17,7 @@ import type {
   ProposalStatus,
   Project,
   User,
+  AuditEvent,
 } from '@meetingops/contracts';
 import type { Database } from '../db/client.js';
 import * as t from '../db/schema.js';
@@ -645,7 +646,7 @@ export class DrizzleAuditRepository implements AuditRepository {
     return this.record(event);
   }
 
-  async listByEntity(entityType: string, entityId: string, limit = 100): Promise<import('@meetingops/contracts').AuditEvent[]> {
+  async listByEntity(entityType: string, entityId: string, limit = 100): Promise<AuditEvent[]> {
     const rows = await this.db
       .select()
       .from(t.auditEvents)
@@ -655,7 +656,7 @@ export class DrizzleAuditRepository implements AuditRepository {
     return rows.map(mapAuditEvent);
   }
 
-  async listAll(limit = 100): Promise<import('@meetingops/contracts').AuditEvent[]> {
+  async listAll(limit = 100): Promise<AuditEvent[]> {
     const rows = await this.db
       .select()
       .from(t.auditEvents)
