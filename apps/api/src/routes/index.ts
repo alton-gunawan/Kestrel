@@ -178,8 +178,7 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
     const auth = await requireUser(repos, request);
     const query = request.query as Record<string, string | undefined>;
     const filter = meetingsFilterSchema.safeParse(query.filter ?? 'all');
-    const now = new Date();
-    const todayStr = new Date(Date.now() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date());
     let from: string | undefined;
     let to: string | undefined;
     let statuses: string[] | undefined;
@@ -192,6 +191,9 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
     } else if (filter.success && filter.data === 'attention') {
       statuses = ['draft', 'proposed', 'needs_followup'];
     }
+    // Explicit date-range params (used by get_calendar_context) override presets.
+    if (typeof query.from === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(query.from)) from = query.from;
+    if (typeof query.to === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(query.to)) to = query.to;
     const meetings = await meetingService.listMeetings(
       actorCtx(request, auth.userId),
       {
