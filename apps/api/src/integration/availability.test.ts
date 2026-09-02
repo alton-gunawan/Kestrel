@@ -11,7 +11,7 @@ import {
   SEED,
   type TestApp,
 } from '../testing/testApp.js';
-import { weekBounds } from '@meetingops/contracts';
+import { weekBounds } from '@kestrel/contracts';
 
 let app: TestApp;
 let cookie: string;

@@ -1,4 +1,4 @@
-# MeetingOps — Golden Demo
+# Kestrel — Golden Demo
 
 ## Goal
 A judge should understand the product and WebMCP value in under three minutes.
@@ -13,7 +13,7 @@ Problem:
 
 ## Demo script
 ### 0:00–0:20 — Setup
-Open MeetingOps dashboard.
+Open Kestrel dashboard.
 Show “Launch” project and upcoming meetings.
 
 ### 0:20–0:45 — Natural language request
@@ -63,6 +63,19 @@ Show follow-up suggestion:
 - seeded data must be deterministic
 - reset button or demo reset route available
 - no signup friction
+- the web app must look fully self-sufficient: all core flows work in the UI
+  without WebMCP and without an agent — WebMCP demonstrates an alternative
+  control path, not a requirement
+- integrations may be demonstrated through seeded/mock-safe boundaries (demo
+  adapters) when third-party connectivity is not part of the judge path
 - no real external calendar dependency required for the primary demo
 - no fake tool logs; logs reflect actual tool calls
 - if native WebMCP is unavailable, manual fallback remains usable, but the submission must separately document actual native WebMCP verification
+
+## Optional segment — Integrations (judge path, ~30s)
+Show the Integrations page:
+1. Connect the Google Calendar demo adapter (scope confirmation shown).
+2. Sync it — the summary states it reads Kestrel' local demo calendar model (no real external system contacted).
+3. Connect Fathom, sync it — the transcript becomes a proposal-ready analysis (payment blocker + data migration action items; no decision/action is committed).
+4. Disconnect — canonical data is retained.
+The demo adapters are labeled DEMO and never claim a real external side effect.

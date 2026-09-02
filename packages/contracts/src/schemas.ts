@@ -548,6 +548,9 @@ export const getMeetingActivityToolInputSchema = z.strictObject({
 
 export const getTodayOverviewToolInputSchema = z.strictObject({});
 
+/** Integration status read tool: catalog + connections + recent activity. */
+export const getIntegrationsToolInputSchema = z.strictObject({});
+
 /* ------------------------------------------------------------------ */
 /* Search/filter DTOs                                                  */
 /* ------------------------------------------------------------------ */

@@ -4,7 +4,7 @@
  * release checklist: "Audit events are written transactionally with
  * mutations").
  */
-import type { ActorType, AuditEvent } from '@meetingops/contracts';
+import type { ActorType, AuditEvent } from '@kestrel/contracts';
 
 export type AuditChannel = 'ui' | 'webmcp' | 'system';
 

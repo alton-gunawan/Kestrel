@@ -18,17 +18,23 @@ import type {
   Project,
   User,
   AuditEvent,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 import type { Database } from '../db/client.js';
 import * as t from '../db/schema.js';
 import { MeetingRevisionConflictError, MissingEntityError, type Repos } from './types.js';
 import type {
   ActionItemRepository,
   AuditRepository,
+  ConnectionStatus,
   CreateMeetingData,
   DecisionRepository,
+  ExternalReferenceRecord,
   FollowUpRepository,
   IdempotencyRepository,
+  IngestionRecordRow,
+  IntegrationConnectionRecord,
+  IntegrationEventRecord,
+  IntegrationRepository,
   MeetingFilter,
   MeetingRepository,
   ParticipantRepository,
@@ -767,6 +773,279 @@ export class DrizzleSessionRepository implements SessionRepository {
   }
 }
 
+/* ------------------------------ integrations ------------------------------ */
+
+export class DrizzleIntegrationRepository implements IntegrationRepository {
+  constructor(private readonly db: Database) {}
+
+  async listConnections(): Promise<IntegrationConnectionRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(t.integrationConnections)
+      .orderBy(t.integrationConnections.displayName);
+    return rows.map(mapConnection);
+  }
+
+  async findConnection(id: string): Promise<IntegrationConnectionRecord | null> {
+    const [row] = await this.db
+      .select()
+      .from(t.integrationConnections)
+      .where(eq(t.integrationConnections.id, id))
+      .limit(1);
+    return row ? mapConnection(row) : null;
+  }
+
+  async findConnectionByProvider(providerId: string): Promise<IntegrationConnectionRecord | null> {
+    const [row] = await this.db
+      .select()
+      .from(t.integrationConnections)
+      .where(eq(t.integrationConnections.providerId, providerId as typeof t.integrationConnections.$inferInsert.providerId))
+      .limit(1);
+    return row ? mapConnection(row) : null;
+  }
+
+  async insertConnection(conn: {
+    id: string;
+    providerId: string;
+    capability: string;
+    displayName: string;
+    scopes: string[];
+    config: Record<string, unknown> | null;
+  }): Promise<IntegrationConnectionRecord> {
+    const [row] = await this.db
+      .insert(t.integrationConnections)
+      .values({
+        id: conn.id,
+        providerId: conn.providerId as typeof t.integrationConnections.$inferInsert.providerId,
+        capability: conn.capability as typeof t.integrationConnections.$inferInsert.capability,
+        status: 'connected',
+        displayName: conn.displayName,
+        scopes: conn.scopes,
+        config: conn.config,
+        connectedAt: new Date(),
+      })
+      .returning();
+    if (!row) throw new Error('Integration connection insert failed');
+    return mapConnection(row);
+  }
+
+  async updateConnectionStatus(
+    id: string,
+    status: ConnectionStatus,
+    extra?: {
+      connectedAt?: Date;
+      lastSyncAt?: Date;
+      lastError?: { code: string; message: string; at: string } | null;
+      config?: Record<string, unknown>;
+    },
+  ): Promise<IntegrationConnectionRecord> {
+    const patch: Record<string, unknown> = {
+      status,
+      updatedAt: new Date(),
+    };
+    if (extra?.connectedAt !== undefined) patch.connectedAt = extra.connectedAt;
+    if (extra?.lastSyncAt !== undefined) patch.lastSyncAt = extra.lastSyncAt;
+    if (extra?.lastError !== undefined) patch.lastError = extra.lastError;
+    if (extra?.config !== undefined) patch.config = extra.config;
+    const [row] = await this.db
+      .update(t.integrationConnections)
+      .set(patch as typeof t.integrationConnections.$inferInsert)
+      .where(eq(t.integrationConnections.id, id))
+      .returning();
+    if (!row) throw new MissingEntityError('integration_connection', id);
+    return mapConnection(row);
+  }
+
+  async recordEvent(event: {
+    id: string;
+    connectionId: string;
+    providerId: string;
+    eventType: string;
+    status: 'ok' | 'error';
+    summary: string;
+    details?: unknown;
+    occurredAt?: Date;
+  }): Promise<IntegrationEventRecord> {
+    const [row] = await this.db
+      .insert(t.integrationEvents)
+      .values({
+        id: event.id,
+        connectionId: event.connectionId,
+        providerId: event.providerId as typeof t.integrationEvents.$inferInsert.providerId,
+        eventType: event.eventType,
+        status: event.status,
+        summary: event.summary,
+        details: event.details ?? null,
+        occurredAt: event.occurredAt ?? new Date(),
+      })
+      .returning();
+    if (!row) throw new Error('Integration event insert failed');
+    return mapEvent(row);
+  }
+
+  async listEvents(connectionId: string, limit = 50): Promise<IntegrationEventRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(t.integrationEvents)
+      .where(eq(t.integrationEvents.connectionId, connectionId))
+      .orderBy(desc(t.integrationEvents.occurredAt))
+      .limit(limit);
+    return rows.map(mapEvent);
+  }
+
+  async listAllEvents(limit = 50): Promise<IntegrationEventRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(t.integrationEvents)
+      .orderBy(desc(t.integrationEvents.occurredAt))
+      .limit(limit);
+    return rows.map(mapEvent);
+  }
+
+  async insertExternalReference(ref: {
+    id: string;
+    providerId: string;
+    externalId: string;
+    externalUrl: string | null;
+    referenceType: string;
+    entityType: string;
+    entityId: string;
+    payload?: unknown;
+  }): Promise<ExternalReferenceRecord> {
+    const [row] = await this.db
+      .insert(t.externalReferences)
+      .values({
+        id: ref.id,
+        providerId: ref.providerId as typeof t.externalReferences.$inferInsert.providerId,
+        externalId: ref.externalId,
+        externalUrl: ref.externalUrl,
+        referenceType: ref.referenceType as typeof t.externalReferences.$inferInsert.referenceType,
+        entityType: ref.entityType,
+        entityId: ref.entityId,
+        payload: ref.payload ?? null,
+      })
+      .returning();
+    if (!row) throw new Error('External reference insert failed');
+    return mapReference(row);
+  }
+
+  async listExternalReferences(filter: { entityType?: string; entityId?: string }): Promise<ExternalReferenceRecord[]> {
+    const conditions = [];
+    if (filter.entityType) conditions.push(eq(t.externalReferences.entityType, filter.entityType));
+    if (filter.entityId) conditions.push(eq(t.externalReferences.entityId, filter.entityId));
+    const rows = await this.db
+      .select()
+      .from(t.externalReferences)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(t.externalReferences.createdAt))
+      .limit(100);
+    return rows.map(mapReference);
+  }
+
+  async findIngestion(providerId: string, sourceEventId: string): Promise<IngestionRecordRow | null> {
+    const [row] = await this.db
+      .select()
+      .from(t.ingestionRecords)
+      .where(
+        and(
+          eq(t.ingestionRecords.providerId, providerId as typeof t.ingestionRecords.$inferInsert.providerId),
+          eq(t.ingestionRecords.sourceEventId, sourceEventId),
+        ),
+      )
+      .limit(1);
+    return row ? mapIngestion(row) : null;
+  }
+
+  async insertIngestion(rec: {
+    id: string;
+    providerId: string;
+    sourceEventId: string;
+    sourceEventType: string;
+    payloadHash: string;
+    status: 'processed' | 'duplicate' | 'failed';
+    outputEntityType?: string | null;
+    outputEntityId?: string | null;
+    error?: { code: string; message: string } | null;
+  }): Promise<IngestionRecordRow> {
+    const [row] = await this.db
+      .insert(t.ingestionRecords)
+      .values({
+        id: rec.id,
+        providerId: rec.providerId as typeof t.ingestionRecords.$inferInsert.providerId,
+        sourceEventId: rec.sourceEventId,
+        sourceEventType: rec.sourceEventType,
+        payloadHash: rec.payloadHash,
+        status: rec.status,
+        outputEntityType: rec.outputEntityType ?? null,
+        outputEntityId: rec.outputEntityId ?? null,
+        error: rec.error ?? null,
+      })
+      .returning();
+    if (!row) throw new Error('Ingestion record insert failed');
+    return mapIngestion(row);
+  }
+}
+
+function mapConnection(row: typeof t.integrationConnections.$inferSelect): IntegrationConnectionRecord {
+  return {
+    id: row.id,
+    providerId: row.providerId,
+    capability: row.capability,
+    status: row.status,
+    displayName: row.displayName,
+    scopes: row.scopes,
+    config: row.config,
+    lastSyncAt: row.lastSyncAt === null ? null : row.lastSyncAt.toISOString(),
+    lastError: row.lastError,
+    connectedAt: row.connectedAt === null ? null : row.connectedAt.toISOString(),
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+function mapEvent(row: typeof t.integrationEvents.$inferSelect): IntegrationEventRecord {
+  return {
+    id: row.id,
+    connectionId: row.connectionId,
+    providerId: row.providerId,
+    eventType: row.eventType,
+    status: row.status,
+    summary: row.summary,
+    details: row.details,
+    occurredAt: row.occurredAt.toISOString(),
+  };
+}
+
+function mapReference(row: typeof t.externalReferences.$inferSelect): ExternalReferenceRecord {
+  return {
+    id: row.id,
+    providerId: row.providerId,
+    externalId: row.externalId,
+    externalUrl: row.externalUrl,
+    referenceType: row.referenceType,
+    entityType: row.entityType,
+    entityId: row.entityId,
+    payload: row.payload,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+function mapIngestion(row: typeof t.ingestionRecords.$inferSelect): IngestionRecordRow {
+  return {
+    id: row.id,
+    providerId: row.providerId,
+    sourceEventId: row.sourceEventId,
+    sourceEventType: row.sourceEventType,
+    receivedAt: row.receivedAt.toISOString(),
+    payloadHash: row.payloadHash,
+    status: row.status,
+    outputEntityType: row.outputEntityType,
+    outputEntityId: row.outputEntityId,
+    error: row.error,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
 /* ------------------------------- bundle ----------------------------------- */
 
 export function createRepos(db: Database): Repos {
@@ -782,5 +1061,6 @@ export function createRepos(db: Database): Repos {
     audit: new DrizzleAuditRepository(db),
     idempotency: new DrizzleIdempotencyRepository(db),
     sessions: new DrizzleSessionRepository(db),
+    integrations: new DrizzleIntegrationRepository(db),
   };
 }

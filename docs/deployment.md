@@ -1,6 +1,6 @@
-# MeetingOps Deployment Runbook
+# Kestrel Deployment Runbook
 
-Production deployment for MeetingOps (API + Web on Neon PostgreSQL).
+Production deployment for Kestrel (API + Web on Neon PostgreSQL).
 
 ## 1. Prerequisites
 

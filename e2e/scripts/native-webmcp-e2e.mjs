@@ -1,7 +1,7 @@
 /**
  * Native WebMCP end-to-end verification: launches real Chrome 153 with the
- * WebMCP feature flag AND its DevTools MCP server, loads MeetingOps, then
- * calls a MeetingOps tool through Chrome's own MCP endpoint — the exact
+ * WebMCP feature flag AND its DevTools MCP server, loads Kestrel, then
+ * calls a Kestrel tool through Chrome's own MCP endpoint — the exact
  * surface external agents (e.g. ChatGPT Desktop) use.
  */
 import { chromium } from '@playwright/test';
@@ -39,7 +39,7 @@ const run = async () => {
     nativeModelContext: false,
     mcpServerReachable: false,
     mcpToolsListed: 0,
-    meetingOpsToolNames: [],
+    kestrelToolNames: [],
     nativeToolExecution: null,
     executionResult: null,
     errors: [],
@@ -57,14 +57,14 @@ const run = async () => {
     await page.waitForTimeout(2000);
     report.chromeVersion = await browser.version();
     report.nativeModelContext = await page.evaluate(
-      () => 'modelContext' in document && document.modelContext !== null && window.__MEETINGOPS_WEBMCP_POLYFILL !== true,
+      () => 'modelContext' in document && document.modelContext !== null && window.__KESTREL_WEBMCP_POLYFILL !== true,
     );
 
     // Chrome's MCP server (initialize → tools/list → tools/call)
     const init = await mcpCall('initialize', {
       protocolVersion: '2025-06-18',
       capabilities: {},
-      clientInfo: { name: 'meetingops-verification', version: '1.0.0' },
+      clientInfo: { name: 'kestrel-verification', version: '1.0.0' },
     });
     if (init.status === 200 && init.json?.result) {
       report.mcpServerReachable = true;
@@ -73,7 +73,7 @@ const run = async () => {
       const tools = await mcpCall('tools/list', {}, sessionId);
       const all = tools.json?.result?.tools ?? [];
       report.mcpToolsListed = all.length;
-      report.meetingOpsToolNames = all.map((t) => t.name).filter((n) => n.startsWith('get_') || n.startsWith('prepare_') || n.startsWith('find_'));
+      report.kestrelToolNames = all.map((t) => t.name).filter((n) => n.startsWith('get_') || n.startsWith('prepare_') || n.startsWith('find_'));
       console.log('MCP tools listed:', all.length);
       console.log(all.map((t) => t.name).join(', '));
 

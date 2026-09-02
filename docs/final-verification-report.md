@@ -1,19 +1,25 @@
-# MeetingOps — Final Verification Report
+# Kestrel — Final Verification Report
 
-Date: 2026-09-02 · Commit at verification: see `git log -1` · Machine: macOS, Node 24.5.0, pnpm 10.14.0
+Date: 2026-09-02 (updated after the integrations direction change) · Commit at verification: see `git log -1` · Machine: macOS, Node 24.5.0, pnpm 10.14.0
 
 ## Verdict
 
-MeetingOps MVP is implemented and verified to the extent stated below. The four
-claim classes from `docs/07_TEST_AND_VERIFICATION.md` are kept separate:
+Kestrel is implemented as a **web-app-first** product (direction change:
+`docs/Kestrel_Perubahan_Arah_Produk_WebApp_First_WebMCP_Integration_Abstraction.md`):
+the human UI is the primary experience, WebMCP is an alternative interface over
+the same shared services, and integrations are a user-facing capability. The
+four claim classes from `docs/07_TEST_AND_VERIFICATION.md` are kept separate:
 
-1. **Code correctness** — PASS (typecheck, lint, 74 automated tests green).
-2. **Workflow correctness** — PASS (13 Playwright E2E tests incl. the golden
-   agent→propose→human-approve→execute→verify→audit chain and the unapproved-refusal chain).
+1. **Code correctness** — PASS (typecheck, lint, 96 automated tests green: 23
+   contracts + 73 API, incl. 15 new integration tests).
+2. **Workflow correctness** — PASS (16 Playwright E2E tests: 3 golden incl. the
+   agent→propose→human-approve→execute→verify→audit chain and the unapproved-refusal
+   chain, 5 WebMCP contract incl. the 21-tool catalog, 5 a11y, 3 integrations UI).
 3. **Native WebMCP interop** — PARTIAL: native **registration** verified in real
-   Chrome 153 (20/20 tools through `document.modelContext`); native tool
-   **execution** through an external agent client (ChatGPT Desktop connector)
-   is **UNVERIFIED** — see `docs/webmcp-native-verification.md`.
+   Chrome 153 for the 20-tool catalog; the 21st tool (`get_integrations`) is
+   **UNVERIFIED** natively; native tool **execution** through an external agent
+   client (ChatGPT Desktop connector) is **UNVERIFIED** — see
+   `docs/webmcp-native-verification.md`.
 4. **Deployed judge-path readiness** — UNVERIFIED: production builds exist and a
    deployment runbook is written; no live deployment was performed in this environment.
 
@@ -23,17 +29,18 @@ claim classes from `docs/07_TEST_AND_VERIFICATION.md` are kept separate:
 | --- | --- | --- |
 | Typecheck (all packages) | `pnpm typecheck` | PASS (0 errors) |
 | Lint | `pnpm lint` (eslint 10 flat config) | PASS (0 problems) |
-| Contracts tests | `pnpm --filter @meetingops/contracts test` | PASS |
-| API unit + integration | `pnpm --filter @meetingops/api test` (Vitest, real PostgreSQL `meetingops_test`) | PASS — 58 tests / 5 files (incl. follow-up leg of the approval loop) |
-| Clean-DB migration proof | scratch database + `pnpm db:migrate` (`drizzle/0000_*.sql` via migration runner) | PASS — 13 tables created from empty database, runner verified |
+| Contracts tests | `pnpm --filter @kestrel/contracts test` | PASS — 23 tests / 2 files (incl. 21-tool catalog + integration schemas) |
+| API unit + integration | `pnpm --filter @kestrel/api test` (Vitest, real PostgreSQL `kestrel_test`) | PASS — 73 tests / 6 files (incl. 15 integration tests: connect/disconnect/sync, webhook idempotency, provider failure, invalid payload) |
+| Clean-DB migration proof | scratch database + `pnpm db:migrate` (`drizzle/0000_*.sql` + `0001_*.sql` via migration runner) | PASS — 17 tables created from empty database, runner verified |
 | E2E golden | `npx playwright test tests/golden.spec.ts` | PASS — 3 tests |
-| E2E WebMCP contract | `npx playwright test tests/webmcp.spec.ts` | PASS — 5 tests |
+| E2E WebMCP contract | `npx playwright test tests/webmcp.spec.ts` | PASS — 5 tests (incl. "registers exactly the 21 documented tools") |
 | E2E accessibility | `npx playwright test tests/a11y.spec.ts` (axe-core + keyboard) | PASS — 5 tests, 0 serious/critical violations |
-| Web production build | `pnpm build:web` (Vite + Astryx/StyleX plugin) | PASS (~4.0 MB dist incl. source maps) |
+| E2E integrations UI | `npx playwright test tests/integrations.spec.ts` | PASS — 3 tests (catalog, connect→sync→disconnect, activity) |
+| Web production build | `pnpm build:web` (Vite + Astryx/StyleX plugin) | PASS |
 | API production build | `pnpm build:api` (tsc) | PASS |
 | Dependency guard | `pnpm audit:deps` | PASS — no LLM/AI-SDK/OpenAI/LangChain dependencies or imports |
-| Native registration | `node e2e/scripts/native-webmcp-check.mjs` (Chrome 153.0.8010.12, `--enable-features=WebMCP`) | PASS — `document.modelContext` native, 20/20 tools, duplicate-safe |
-| Native UI evidence | `node e2e/scripts/native-ui-evidence.mjs` | PASS — Settings shows "native document.modelContext · Registered tools (20)" |
+| Native registration | `node e2e/scripts/native-webmcp-check.mjs` (Chrome 153.0.8010.12, `--enable-features=WebMCP`) | PASS (20-tool catalog at run time) — `document.modelContext` native, duplicate-safe; 21st tool UNVERIFIED natively |
+| Native UI evidence | `node e2e/scripts/native-ui-evidence.mjs` | PASS (20-tool revision) — Settings shows "native document.modelContext · Registered tools (20)" |
 
 ## Known limitations (stated, not hidden)
 
@@ -43,23 +50,33 @@ claim classes from `docs/07_TEST_AND_VERIFICATION.md` are kept separate:
    callbacks are the same functions the polyfill exercised, and the polyfill
    chain (propose→approve→execute→verify) is E2E-verified — but the browser-
    brokered invocation path itself is unproven in this environment.
-2. **No mobile bottom-nav layout.** The UI is desktop-optimized; Astryx AppShell
+2. **21st WebMCP tool not natively re-verified.** The direction change added
+   `get_integrations` (catalog now 21 tools). Native registration in Chrome 153
+   was verified for the 20-tool catalog; the new tool is covered by the labeled
+   polyfill E2E path only — native registration of `get_integrations` is
+   **UNVERIFIED** (see `webmcp-native-verification.md`).
+3. **Integration demo adapters are demo-scoped.** Google Calendar and Fathom
+   adapters exercise the real adapter boundary over seeded/local data; no real
+   external system is contacted. This is honest by design (no fake success),
+   and real provider connectivity remains UNVERIFIED.
+4. **No mobile bottom-nav layout.** The UI is desktop-optimized; Astryx AppShell
    provides a compact side nav but a dedicated mobile bottom-nav was not built
    (out of the MVP's demo path).
-3. **No NL command-bar input.** The agent entry point is the WebMCP tool surface;
+5. **No NL command-bar input.** The agent entry point is the WebMCP tool surface;
    agent guidance is documented in Settings instead of a top-bar NL input.
-4. **Deployment smoke not executed.** `docs/deployment.md` describes Neon
+6. **Deployment smoke not executed.** `docs/deployment.md` describes Neon
    deployment; no live deploy was performed.
-5. **Demo routes** are disabled in production unless `ENABLE_DEMO_ROUTES=true`.
-6. **AI-generated UI strings** are English-only; no i18n (out of scope).
+7. **Demo routes** are disabled in production unless `ENABLE_DEMO_ROUTES=true`.
+8. **AI-generated UI strings** are English/Indonesian mixed; no full i18n (out of scope).
 
 ## Requirement status summary
 
 Per-requirement statuses live in `docs/requirements-traceability.md` (updated at
-final phase). Roll-up: all STACK/WM/DOM/AG/TEST rows PASS except WM-1's native
-*execution* sub-claim (documented UNVERIFIED above), UX-3 and UX-9 (FAIL —
-stated limitations 2 and 3), TEST-7/REL-5 deployment-smoke portions (UNVERIFIED),
-and SC-2 external-client round-trip (UNVERIFIED).
+final phase). Roll-up: all STACK/WM/DOM/AG/TEST/INT rows PASS except WM-1's native
+*execution* sub-claim and the 21st tool's native registration (documented
+UNVERIFIED above), UX-3 and UX-9 (FAIL — stated limitations 4 and 5),
+TEST-7/REL-5 deployment-smoke portions (UNVERIFIED), and SC-2 external-client
+round-trip (UNVERIFIED).
 
 ## Security review notes (Phase 9)
 

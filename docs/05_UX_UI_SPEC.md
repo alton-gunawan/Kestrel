@@ -1,4 +1,4 @@
-# MeetingOps — UX/UI Specification
+# Kestrel — UX/UI Specification
 
 ## Product feeling
 Professional, calm, operational, trustworthy.
@@ -8,9 +8,10 @@ Avoid “AI toy” aesthetics: no neon gradients, robot illustrations, oversized
 ## Primary navigation
 - Overview
 - Meetings
-- Projects
 - Actions
-- Decisions
+- Projects
+- Integrations
+- Proposals
 - Settings
 
 ## Application shell
@@ -85,6 +86,20 @@ Tabs:
 - suggested follow-up date
 - agenda continuity from previous meeting
 
+## Integrations page
+Integrations are a first-class, user-facing lifecycle — the user must never
+need to understand WebMCP to use them.
+
+- Provider cards grouped by capability: calendar, meeting intelligence, communication, project systems, meeting platform, automation.
+- Connect flow: requested scopes are shown and confirmed before connecting.
+- Per-provider status: `disconnected | connecting | connected | error`, plus last sync time.
+- Sync and disconnect actions (disconnect retains canonical Kestrel data).
+- Last-error display with stable error code.
+- Activity list of real server events (connects, syncs, webhook ingestion) — no simulated logs.
+- Demo adapters are clearly labeled (DEMO badge) and never claim a real external side effect.
+- Loading, empty, and error states throughout.
+- Agent Activity remains a secondary observability surface; it is not the primary way users operate the app.
+
 ## Approval UX
 Never use a single ambiguous “Approve” button without showing consequences.
 
@@ -135,7 +150,7 @@ After approval:
 Primary natural-language entry point, but not a full chat application.
 
 Placeholder:
-> Ask MeetingOps to prepare or update a meeting…
+> Ask Kestrel to prepare or update a meeting…
 
 ## Accessibility
 - keyboard navigation throughout

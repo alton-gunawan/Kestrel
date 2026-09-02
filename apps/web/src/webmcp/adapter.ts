@@ -9,7 +9,7 @@
  *   server's PROPOSAL_NOT_APPROVED error — surfaced verbatim, not masked.
  * - Tool results use the { ok, data | error, context } envelope.
  */
-import { getToolDefinition, REQUIRED_TOOL_NAMES, type ToolDefinition } from '@meetingops/contracts';
+import { getToolDefinition, REQUIRED_TOOL_NAMES, type ToolDefinition } from '@kestrel/contracts';
 
 import { callToolApi } from './results';
 
@@ -56,6 +56,7 @@ const executors: Record<string, Executor> = {
     return callToolApi('GET', `/api/decisions${qs ? `?${qs}` : ''}`);
   },
   get_meeting_activity: (i) => callToolApi('GET', `/api/activity?meetingId=${encodeURIComponent(String(i.meetingId))}`),
+  get_integrations: () => callToolApi('GET', '/api/integrations'),
 
   /* ---------------------------- proposals ---------------------------- */
   prepare_meeting_proposal: (i) =>
@@ -200,7 +201,7 @@ export function isWebmcpNativelySupported(): boolean {
     typeof document !== 'undefined' &&
     typeof (document as { modelContext?: unknown }).modelContext === 'object' &&
     (document as { modelContext?: unknown }).modelContext !== null &&
-    typeof (window as { __MEETINGOPS_WEBMCP_POLYFILL?: true }).__MEETINGOPS_WEBMCP_POLYFILL === 'undefined'
+    typeof (window as { __KESTREL_WEBMCP_POLYFILL?: true }).__KESTREL_WEBMCP_POLYFILL === 'undefined'
   );
 }
 

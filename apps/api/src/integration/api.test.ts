@@ -11,7 +11,7 @@ import {
   SEED,
   type TestApp,
 } from '../testing/testApp.js';
-import { weekBounds } from '@meetingops/contracts';
+import { weekBounds } from '@kestrel/contracts';
 
 let app: TestApp;
 let cookie: string;
@@ -64,7 +64,7 @@ describe('authentication', () => {
     const res = await app.inject({
       method: 'GET',
       url: '/api/overview',
-      headers: { cookie: 'meetingops_session=not-a-real-session' },
+      headers: { cookie: 'kestrel_session=not-a-real-session' },
     });
     expect(res.statusCode).toBe(401);
   });

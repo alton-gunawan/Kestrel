@@ -19,7 +19,7 @@ import {
   type ProposalStateSnapshot,
 } from './proposalRules.js';
 import { verifyMeetingSnapshot, expectationsFromProposalPayload } from './verification.js';
-import { weekBounds, zonedTimeToUtcMs, type Participant, type FocusBlock } from '@meetingops/contracts';
+import { weekBounds, zonedTimeToUtcMs, type Participant, type FocusBlock } from '@kestrel/contracts';
 
 /* ------------------------------- helpers -------------------------------- */
 

@@ -1,5 +1,5 @@
 /**
- * Integration test harness: real PostgreSQL (meetingops_test), real HTTP
+ * Integration test harness: real PostgreSQL (kestrel_test), real HTTP
  * (fastify inject), migrated + seeded per suite.
  */
 import { afterAll, beforeAll } from 'vitest';
@@ -7,7 +7,7 @@ import { buildApp, type AppHandle } from '../app.js';
 import { resetToGoldenDemo } from '../seed/goldenDemo.js';
 
 export const TEST_DATABASE_URL =
-  process.env.DATABASE_URL_TEST ?? 'postgresql://altongunawanpurwanto@localhost:5432/meetingops_test';
+  process.env.DATABASE_URL_TEST ?? 'postgresql://altongunawanpurwanto@localhost:5432/kestrel_test';
 
 export interface TestApp {
   handle: AppHandle;
@@ -66,7 +66,7 @@ export function authedHeaders(cookie: string, channel: 'ui' | 'webmcp' = 'ui'): 
     cookie,
     'x-request-id': `req-${Math.random().toString(16).slice(2)}`,
     'content-type': 'application/json',
-    'x-meetingops-channel': channel,
+    'x-kestrel-channel': channel,
   };
 }
 

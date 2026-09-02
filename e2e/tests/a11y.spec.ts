@@ -22,7 +22,7 @@ async function scan(page: Page): Promise<void> {
 test.describe('accessibility @a11y', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForFunction(() => window.__MEETINGOPS_POLYFILL_TOOLS__ !== undefined, undefined, {
+    await page.waitForFunction(() => window.__KESTREL_POLYFILL_TOOLS__ !== undefined, undefined, {
       timeout: 15_000,
     });
   });
@@ -34,7 +34,7 @@ test.describe('accessibility @a11y', () => {
 
   test('meetings page has no serious a11y violations @a11y', async ({ page }) => {
     await page.goto('/meetings');
-    await expect(page.getByText('Calendar of MeetingOps meetings')).toBeVisible();
+    await expect(page.getByText('Jadwal & Ruang Kerja Rapat Pengguna')).toBeVisible();
     await scan(page);
   });
 
@@ -46,14 +46,14 @@ test.describe('accessibility @a11y', () => {
 
   test('settings page has no serious a11y violations @a11y', async ({ page }) => {
     await page.goto('/settings');
-    await expect(page.getByText('Agent integration and demo controls')).toBeVisible();
+    await expect(page.getByText('Settings & Integrasi')).toBeVisible();
     await scan(page);
   });
 
   test('approve action is keyboard reachable @a11y', async ({ page }) => {
     // Create a pending proposal through the hook, then reach Approve via Tab.
     const proposal = await page.evaluate(async () => {
-      const tools = window.__MEETINGOPS_POLYFILL_TOOLS__;
+      const tools = window.__KESTREL_POLYFILL_TOOLS__;
       const slots = await tools.get('find_available_slots')!.execute({
         participantIds: ['par_alex'],
         dateFrom: new Date().toISOString().slice(0, 10),

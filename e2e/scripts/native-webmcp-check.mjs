@@ -2,7 +2,7 @@
  * Native WebMCP verification (Phase 10, WM-11): runs the app in real Chrome
  * (stable channel, no polyfill needed) and checks whether
  * document.modelContext exists natively. If it does, verifies that all 20
- * MeetingOps tools register through the NATIVE implementation and that a
+ * Kestrel tools register through the NATIVE implementation and that a
  * native tool call executes the real API path.
  *
  * Honesty: whatever this script cannot prove is reported as UNVERIFIED.
@@ -44,7 +44,7 @@ const run = async () => {
         typeof document !== 'undefined' &&
         'modelContext' in document &&
         document.modelContext !== null &&
-        window.__MEETINGOPS_WEBMCP_POLYFILL !== true,
+        window.__KESTREL_WEBMCP_POLYFILL !== true,
     );
 
     if (report.nativeModelContext) {
@@ -59,7 +59,7 @@ const run = async () => {
       console.log('native registered tools:', status.count, status.names.join(', '));
     } else {
       console.log('document.modelContext NOT natively available in this Chrome.');
-      console.log('Polyfill status flag:', await page.evaluate(() => window.__MEETINGOPS_WEBMCP_POLYFILL === true));
+      console.log('Polyfill status flag:', await page.evaluate(() => window.__KESTREL_WEBMCP_POLYFILL === true));
     }
   } catch (err) {
     report.errors.push(err instanceof Error ? err.message : String(err));

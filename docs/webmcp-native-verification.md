@@ -1,26 +1,32 @@
 # Native WebMCP Verification — honest record
 
-Status date: 2026-09-02 · Chrome 153.0.8010.12 (stable, macOS) · MeetingOps dev build
+Status date: 2026-09-02 · Chrome 153.0.8010.12 (stable, macOS) · Kestrel dev build
+Catalog note: the tool catalog is now **21** tools (direction change added the
+read-only `get_integrations` tool). Native registration below was verified for
+the **20-tool** catalog on 2026-09-02; native re-verification of the 21st tool
+is **UNVERIFIED** in this environment (the 21-tool catalog is E2E-verified
+through the labeled polyfill path only).
 
 ## What was verified (PASS)
 
 | Check | Method | Result |
 | --- | --- | --- |
-| `document.modelContext` exists natively | Real Chrome 153 (channel `chrome`), flag `--enable-features=WebMCP`, no polyfill (`window.__MEETINGOPS_WEBMCP_POLYFILL` unset) | PASS |
-| All 20 MeetingOps tools register through the **native** context | `await document.modelContext.getTools()` after app boot | PASS — exactly 20, names match `REQUIRED_TOOL_NAMES` |
+| `document.modelContext` exists natively | Real Chrome 153 (channel `chrome`), flag `--enable-features=WebMCP`, no polyfill (`window.__KESTREL_WEBMCP_POLYFILL` unset) | PASS |
+| All 20 Kestrel tools (catalog at verification time) register through the **native** context | `await document.modelContext.getTools()` after app boot | PASS — exactly 20, names match `REQUIRED_TOOL_NAMES` (20-tool revision) |
 | `registerTool` duplicate handling | Re-registration attempt | Native context rejects duplicates; app adapter is idempotent (module-level promise + `getTools()` pre-check) |
 | Metadata fidelity | Inspected native tool records | `annotations` (incl. `readOnlyHint`), `description`, `inputSchema`, `title`, `origin` present |
 
 Scripts: `e2e/scripts/native-webmcp-check.mjs`, `native-ui-evidence.mjs`, `native-execute-check.mjs`.
-UI evidence: settings page shows “Mode: native document.modelContext · Registered tools (20)”.
+UI evidence: settings page shows “Mode: native document.modelContext · Registered tools (20)” (20-tool revision).
 
 ## What was verified about the polyfill (PASS, distinct from native)
 
-All 13 Playwright E2E tests (`@golden`, `@webmcp`, `@a11y`) run against the labeled
-**polyfill** in Chromium, including the full golden chain
-agent→propose→human-approve(UI)→execute→verify→audit. This proves the app logic and
-the adapter contract; it does **not** prove native interop by itself — which is why
-the native checks above exist.
+All Playwright E2E tests (`@golden`, `@webmcp`, `@a11y`, `@integrations`) run
+against the labeled **polyfill** in Chromium, including the full golden chain
+agent→propose→human-approve(UI)→execute→verify→audit and the 21-tool catalog
+(with `get_integrations`). This proves the app logic and the adapter contract;
+it does **not** prove native interop by itself — which is why the native checks
+above exist.
 
 ## What is NOT verifiable locally (UNVERIFIED / BLOCKED)
 

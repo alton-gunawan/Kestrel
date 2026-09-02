@@ -32,7 +32,7 @@ export const SYSTEM_CONTEXT: ActorContext = {
 
 /**
  * Build the actor context for an HTTP request: user from the server-side
- * session; channel from the non-authoritative X-MeetingOps-Channel header
+ * session; channel from the non-authoritative X-Kestrel-Channel header
  * (D-011). The channel is audit metadata only — it never grants
  * authorization.
  */
@@ -40,7 +40,7 @@ export function requestActorCtx(
   request: { id: string; headers: Record<string, string | string[] | undefined> },
   userId: string,
 ): ActorContext {
-  const raw = request.headers['x-meetingops-channel'];
+  const raw = request.headers['x-kestrel-channel'];
   const channelRaw = Array.isArray(raw) ? raw[0] : raw;
   const channel: Channel = channelRaw === 'webmcp' ? 'webmcp' : 'ui';
   return { userId, requestId: request.id, channel };

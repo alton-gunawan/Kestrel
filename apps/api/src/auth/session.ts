@@ -5,12 +5,12 @@
  * session — the client cannot assert identity.
  */
 import { z } from 'zod';
-import { AppError } from '@meetingops/contracts';
+import { AppError } from '@kestrel/contracts';
 import type { Repos } from '../repositories/types.js';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { randomUUID } from 'node:crypto';
 
-export const SESSION_COOKIE = 'meetingops_session';
+export const SESSION_COOKIE = 'kestrel_session';
 
 export interface AuthenticatedUser {
   readonly userId: string;
@@ -37,7 +37,7 @@ export async function requireUser(
     request.cookies[SESSION_COOKIE] ??
     request.headers.authorization?.replace(/^Bearer\s+/i, '');
   if (!sessionId) {
-    throw new AppError('UNAUTHENTICATED', 'Sign in to MeetingOps to continue');
+    throw new AppError('UNAUTHENTICATED', 'Sign in to Kestrel to continue');
   }
   const session = await repos.sessions.findActive(sessionId);
   if (!session) {

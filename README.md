@@ -1,9 +1,9 @@
-# MeetingOps
+# Kestrel
 
-**MeetingOps turns meetings into execution.**
+**Kestrel turns meetings into execution.**
 
 An external AI agent reasons over a WebMCP capability surface exposed by this web
-app; MeetingOps owns the meeting/project state and safely executes only what a
+app; Kestrel owns the meeting/project state and safely executes only what a
 human explicitly approved.
 
 ```
@@ -19,12 +19,12 @@ can propose and execute-approved, but only a human can approve, in the UI.
 pnpm install
 
 # PostgreSQL 14+ running locally, then create the databases:
-createdb meetingops_dev
-createdb meetingops_test
+createdb kestrel_dev
+createdb kestrel_test
 
 # Terminal 1 — API (auto-creates schema, seeds the golden demo)
 pnpm dev:api
-#   env: DATABASE_URL=postgresql://$USER@localhost:5432/meetingops_dev
+#   env: DATABASE_URL=postgresql://$USER@localhost:5432/kestrel_dev
 #        SESSION_SECRET=<32+ random chars>  AUTO_SEED=true
 
 # Terminal 2 — Web (Vite dev server on :5173, proxies /api → :8787)
@@ -49,19 +49,24 @@ golden demo dataset is seeded automatically.
 
 ## Architecture
 
-- `packages/contracts` — Zod schemas, error codes, domain types, WebMCP tool catalog (20 tools).
+- `packages/contracts` — Zod schemas, error codes, domain types, integration contracts, WebMCP tool catalog (21 tools).
 - `apps/api` — Fastify 5 + Zod + Drizzle + PostgreSQL. Owns all durable state,
   validation, authorization, idempotency, audit, and verification. Deterministic
-  domain logic (availability, focus blocks, proposal rules) lives here.
-- `apps/web` — React 19 + Vite + Astryx (StyleX). Registers the 20-tool catalog
+  domain logic (availability, focus blocks, proposal rules) lives here, plus the
+  capability-based integration abstraction (registry, canonical mapping, demo
+  adapters, idempotent webhook ingestion).
+- `apps/web` — React 19 + Vite + Astryx (StyleX). Registers the 21-tool catalog
   through native `document.modelContext` (labeled polyfill fallback on
-  unsupported browsers). UI and WebMCP paths hit the same API.
+  unsupported browsers). Includes the user-facing Integrations page
+  (`/integrations`). UI, WebMCP, and integration adapters all hit the same API.
 
 ```
 browser ── UI (React) ──────────┐
                                 ├──► Fastify API ──► Drizzle ──► PostgreSQL
 agent ── document.modelContext ─┘        │
-         (WebMCP, 20 tools)              └── audit + verification reports
+         (WebMCP, 21 tools)              └── audit + verification reports
+external ── integration adapters ────────┘
+system     (capability-based, demo-first)
 ```
 
 ## The golden demo

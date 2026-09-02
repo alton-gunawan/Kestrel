@@ -1,5 +1,5 @@
 {
-  "name": "@meetingops/web",
+  "name": "@kestrel/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
   "dependencies": {
     "@astryxdesign/core": "0.5.2",
     "@astryxdesign/theme-neutral": "0.5.2",
-    "@meetingops/contracts": "workspace:*",
+    "@kestrel/contracts": "workspace:*",
     "@phosphor-icons/react": "2.1.10",
     "@stylexjs/stylex": "0.19.0",
     "react": "19.2.8",

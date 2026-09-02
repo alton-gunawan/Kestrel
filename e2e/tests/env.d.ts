@@ -10,6 +10,6 @@ interface ToolHook {
 declare global {
   interface Window {
     /** Test/verification hook exposing the polyfill's tool registry. */
-    __MEETINGOPS_POLYFILL_TOOLS__?: Map<string, ToolHook>;
+    __KESTREL_POLYFILL_TOOLS__?: Map<string, ToolHook>;
   }
 }

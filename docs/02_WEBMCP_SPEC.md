@@ -1,7 +1,10 @@
-# MeetingOps — WebMCP Technical Specification
+# Kestrel — WebMCP Technical Specification
 
 ## Core rule
-WebMCP is the external agent interface to MeetingOps. The application provides capabilities; the external agent supplies reasoning.
+Kestrel is first a web application: the human UI is the primary product
+experience and works fully without WebMCP. WebMCP is an **alternative interface**
+over the same shared application/domain services the UI uses — agents may
+discover and invoke the same capabilities, but nothing requires them.
 
 The current WebMCP draft exposes `document.modelContext.registerTool(...)`, with structured names, descriptions, JSON Schema input, and executable callbacks. citehttps://webmachinelearning.github.io/webmcp/
 
@@ -21,22 +24,23 @@ Conceptual flow:
 6. `get_open_actions`
 7. `get_decisions`
 8. `get_meeting_activity`
+9. `get_integrations` — integration status: provider catalog (capability, demo flag) and live connection status (connected/disconnected/error, last sync). Read-only; connecting or disconnecting providers is a user action in the UI, not a tool.
 
 ### Proposal / planning
-9. `prepare_meeting_proposal`
-10. `update_meeting_proposal`
-11. `prepare_agenda_proposal`
-12. `prepare_followup_proposal`
+10. `prepare_meeting_proposal`
+11. `update_meeting_proposal`
+12. `prepare_agenda_proposal`
+13. `prepare_followup_proposal`
 
 ### Mutating — approval-gated
-13. `create_meeting`
-14. `update_meeting`
-15. `create_agenda_item`
-16. `record_decision`
-17. `create_action_item`
-18. `assign_action_item`
-19. `schedule_followup`
-20. `verify_meeting_state`
+14. `create_meeting`
+15. `update_meeting`
+16. `create_agenda_item`
+17. `record_decision`
+18. `create_action_item`
+19. `assign_action_item`
+20. `schedule_followup`
+21. `verify_meeting_state`
 
 > Important: `approve_proposal` is intentionally NOT a WebMCP tool. Approval is a human action in the UI, not agent-supplied permission.
 
@@ -100,3 +104,10 @@ Only expose tools that make sense in the current app state. For example, `record
 
 ## No hallucinated side effects
 `verify_meeting_state` must report actual persisted state. A successful tool response must never claim an external calendar event exists unless the configured integration actually confirmed it. The hackathon MVP may use a local calendar domain model, but it must be clearly represented as such.
+
+## Integration data is untrusted
+External provider data (transcripts, calendar content, webhook payloads) is
+untrusted input. It is validated with Zod, mapped to canonical Kestrel
+concepts, and surfaced as **proposals awaiting human approval** — it is never
+committed directly as a decision or action item. Demo adapters are labeled
+`demo` and never claim a real external side effect.

@@ -16,7 +16,7 @@ import {
   type ProposalKind,
   type ProposalStatus,
   type VerificationReport,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 import { idFactory } from '../ids.js';
 import {
   executionBlockReason,
@@ -331,7 +331,7 @@ export class ProposalService {
   /** Human-only (FR-3). The session IS the authorization. */
   async approve(ctx: ActorContext, proposalId: string): Promise<Proposal> {
     if (ctx.channel !== 'ui') {
-      throw new AppError('APPROVAL_FORBIDDEN', 'Approval is a human action in the MeetingOps UI');
+      throw new AppError('APPROVAL_FORBIDDEN', 'Approval is a human action in the Kestrel UI');
     }
     const repos = this.repos();
     const proposal = await repos.proposals.findById(proposalId);
@@ -358,7 +358,7 @@ export class ProposalService {
 
   async reject(ctx: ActorContext, proposalId: string, reason: string): Promise<Proposal> {
     if (ctx.channel !== 'ui') {
-      throw new AppError('APPROVAL_FORBIDDEN', 'Rejection is a human action in the MeetingOps UI');
+      throw new AppError('APPROVAL_FORBIDDEN', 'Rejection is a human action in the Kestrel UI');
     }
     const repos = this.repos();
     const proposal = await repos.proposals.findById(proposalId);

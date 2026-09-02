@@ -17,7 +17,7 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import type { FocusBlock, WorkingHours } from '@meetingops/contracts';
+import type { FocusBlock, WorkingHours } from '@kestrel/contracts';
 
 /* ---------------------------------- enums --------------------------------- */
 
@@ -50,6 +50,51 @@ export const followUpStatusEnum = pgEnum('follow_up_status', [
 ]);
 export const actorTypeEnum = pgEnum('actor_type', ['human', 'agent', 'system']);
 export const auditChannelEnum = pgEnum('audit_channel', ['ui', 'webmcp', 'system']);
+export const integrationProviderEnum = pgEnum('integration_provider', [
+  'google_calendar',
+  'fathom',
+  'slack',
+  'linear',
+  'microsoft_outlook',
+  'fireflies',
+  'tldv',
+  'github',
+  'zoom',
+  'google_meet',
+  'notion',
+  'email',
+  'zapier',
+]);
+export const providerCapabilityEnum = pgEnum('provider_capability', [
+  'calendar',
+  'meeting_intelligence',
+  'communication',
+  'project',
+  'meeting_platform',
+  'automation',
+]);
+export const connectionStatusEnum = pgEnum('connection_status', [
+  'disconnected',
+  'connecting',
+  'connected',
+  'error',
+]);
+export const integrationEventStatusEnum = pgEnum('integration_event_status', ['ok', 'error']);
+export const ingestionStatusEnum = pgEnum('ingestion_status', [
+  'processed',
+  'duplicate',
+  'failed',
+]);
+export const externalReferenceTypeEnum = pgEnum('external_reference_type', [
+  'meeting',
+  'transcript',
+  'summary',
+  'action_item',
+  'decision',
+  'issue',
+  'event',
+  'notification',
+]);
 export const proposalKindEnum = pgEnum('proposal_kind', [
   'meeting_create',
   'meeting_update',
@@ -278,4 +323,89 @@ export const sessions = pgTable(
     revoked: boolean('revoked').notNull().default(false),
   },
   (t) => [index('sessions_user_idx').on(t.userId)],
+);
+
+/* ---------------------------- integrations ------------------------------ */
+/* Provider abstraction persistence (doc Integration Abstraction sections 4–7).
+   Provider-specific objects are NEVER core domain entities: connections hold
+   user-facing scope/status/config, events hold real activity, references map
+   canonical entities to provider objects, and ingestion records make webhook
+   delivery idempotent and auditable. */
+
+export const integrationConnections = pgTable(
+  'integration_connections',
+  {
+    id: text('id').primaryKey(),
+    providerId: integrationProviderEnum('provider_id').notNull(),
+    capability: providerCapabilityEnum('capability').notNull(),
+    status: connectionStatusEnum('status').notNull().default('disconnected'),
+    displayName: text('display_name').notNull(),
+    scopes: jsonb('scopes').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    config: jsonb('config').$type<Record<string, unknown>>(),
+    lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
+    lastError: jsonb('last_error').$type<{ code: string; message: string; at: string }>(),
+    connectedAt: timestamp('connected_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('integration_connections_provider_idx').on(t.providerId),
+    index('integration_connections_status_idx').on(t.status),
+  ],
+);
+
+export const integrationEvents = pgTable(
+  'integration_events',
+  {
+    id: text('id').primaryKey(),
+    connectionId: text('connection_id')
+      .notNull()
+      .references(() => integrationConnections.id, { onDelete: 'cascade' }),
+    providerId: integrationProviderEnum('provider_id').notNull(),
+    eventType: text('event_type').notNull(),
+    status: integrationEventStatusEnum('status').notNull(),
+    summary: text('summary').notNull(),
+    details: jsonb('details').$type<unknown>(),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('integration_events_connection_idx').on(t.connectionId, t.occurredAt)],
+);
+
+/** Canonical link from a Kestrel entity to a provider-side object. */
+export const externalReferences = pgTable(
+  'external_references',
+  {
+    id: text('id').primaryKey(),
+    providerId: integrationProviderEnum('provider_id').notNull(),
+    externalId: text('external_id').notNull(),
+    externalUrl: text('external_url'),
+    referenceType: externalReferenceTypeEnum('reference_type').notNull(),
+    entityType: text('entity_type').notNull(),
+    entityId: text('entity_id').notNull(),
+    payload: jsonb('payload').$type<unknown>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('external_references_provider_external_idx').on(t.providerId, t.externalId),
+    index('external_references_entity_idx').on(t.entityType, t.entityId),
+  ],
+);
+
+/** Idempotent, auditable webhook/event ingestion (doc section 14). */
+export const ingestionRecords = pgTable(
+  'ingestion_records',
+  {
+    id: text('id').primaryKey(),
+    providerId: integrationProviderEnum('provider_id').notNull(),
+    sourceEventId: text('source_event_id').notNull(),
+    sourceEventType: text('source_event_type').notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
+    payloadHash: text('payload_hash').notNull(),
+    status: ingestionStatusEnum('status').notNull(),
+    outputEntityType: text('output_entity_type'),
+    outputEntityId: text('output_entity_id'),
+    error: jsonb('error').$type<{ code: string; message: string }>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('ingestion_records_provider_event_unique').on(t.providerId, t.sourceEventId)],
 );

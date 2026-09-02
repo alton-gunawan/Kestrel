@@ -168,7 +168,7 @@ export function MeetingsPage() {
           <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14, minWidth: 380 }}>
             <DialogHeader title="Schedule a new meeting" />
             <Text size="sm" color="secondary">
-              Buat rapat langsung ke sistem MeetingOps Anda.
+              Buat rapat langsung ke sistem Kestrel Anda.
             </Text>
 
             <TextInput

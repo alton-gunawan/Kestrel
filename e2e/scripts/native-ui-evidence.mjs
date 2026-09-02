@@ -1,6 +1,9 @@
 /**
  * Native-mode UI evidence: real Chrome 153 + WebMCP flag shows the honest
- * "WebMCP native · 20 tools" badge, and the settings page reports native mode.
+ * "WebMCP native · 20 tools" badge (20-tool catalog revision; the 21st tool,
+ * get_integrations, was added later and its native registration is UNVERIFIED
+ * — see docs/webmcp-native-verification.md), and the settings page reports
+ * native mode.
  */
 import { chromium } from '@playwright/test';
 import { writeFileSync } from 'node:fs';

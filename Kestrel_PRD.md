@@ -1,7 +1,7 @@
-# MeetingOps Product Requirements Document v2
+# Kestrel Product Requirements Document v2
 
 ## 1. Product summary
-MeetingOps is a web workspace that turns meetings into execution. It combines scheduling, project context, agenda preparation, outcome capture, action-item creation, and follow-up into one lifecycle.
+Kestrel is a web workspace that turns meetings into execution. It combines scheduling, project context, agenda preparation, outcome capture, action-item creation, and follow-up into one lifecycle.
 
 The differentiator is WebMCP: an external agent can discover structured meeting capabilities exposed by the site and use them with human approval, instead of mechanically driving the UI.
 
@@ -9,10 +9,10 @@ The differentiator is WebMCP: an external agent can discover structured meeting 
 Primary: product managers, project managers, engineering managers, founders, and operations leads who run recurring meetings tied to work.
 
 ## 3. Problem
-Traditional calendars answer “when?” but leave administrative work scattered across calendars, project trackers, notes, and follow-up tasks. MeetingOps closes the loop from meeting intent to persistent work.
+Traditional calendars answer “when?” but leave administrative work scattered across calendars, project trackers, notes, and follow-up tasks. Kestrel closes the loop from meeting intent to persistent work.
 
 ## 4. Product promise
-**MeetingOps turns meetings into execution.**
+**Kestrel turns meetings into execution.**
 
 ## 5. MVP goals
 1. Prepare a meeting using calendar constraints and project context.

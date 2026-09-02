@@ -25,7 +25,7 @@ import {
   sessionRequestSchema,
   meetingsFilterSchema,
   verifyMeetingStateInputSchema,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 import type { Repos } from '../repositories/types.js';
 import type { Env } from '../config/env.js';
 import type { DbHandle } from '../db/client.js';
@@ -43,11 +43,11 @@ interface RouteOptions {
 
 /**
  * Build the actor context for a request: user from the server-side session;
- * channel from the non-authoritative X-MeetingOps-Channel header (D-011).
+ * channel from the non-authoritative X-Kestrel-Channel header (D-011).
  * The channel is audit metadata only — it never grants authorization.
  */
 function actorCtx(request: { id: string; headers: Record<string, string | string[] | undefined> }, userId: string) {
-  const raw = request.headers['x-meetingops-channel'];
+  const raw = request.headers['x-kestrel-channel'];
   const channelRaw = Array.isArray(raw) ? raw[0] : raw;
   const channel = channelRaw === 'webmcp' ? 'webmcp' : 'ui';
   return { userId, requestId: request.id, channel } as const;
@@ -120,7 +120,7 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
     const ok = database === 'ok';
     reply.status(ok ? 200 : 503).send({
       status: ok ? 'ok' : 'degraded',
-      service: 'meetingops-api',
+      service: 'kestrel-api',
       database,
       latencyMs: Date.now() - started,
       requestId: _request.id,
@@ -142,7 +142,7 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
   app.delete('/api/session', async (request, reply) => {
     const auth = await requireUser(repos, request);
     await db.sql`update sessions set revoked = true where id = ${auth.sessionId}`;
-    reply.header('set-cookie', 'meetingops_session=; Path=/; HttpOnly; Max-Age=0');
+    reply.header('set-cookie', 'kestrel_session=; Path=/; HttpOnly; Max-Age=0');
     reply.status(204).send();
   });
 

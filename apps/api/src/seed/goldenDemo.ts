@@ -13,8 +13,8 @@
  *   first Wednesday slot deterministically 10:30 for a 30-minute meeting
  *   (grid-aligned), matching the UX example "Wed 10:30".
  */
-import type { FocusBlock, WorkingHours } from '@meetingops/contracts';
-import { weekBounds, weekdayOfDate, zonedTimeToUtcMs } from '@meetingops/contracts';
+import type { FocusBlock, WorkingHours } from '@kestrel/contracts';
+import { weekBounds, weekdayOfDate, zonedTimeToUtcMs } from '@kestrel/contracts';
 import { createDb } from '../db/client.js';
 import type postgres from 'postgres';
 
@@ -133,17 +133,17 @@ async function seedInto(sql: Sql, options: SeedOptions): Promise<void> {
   await sql.begin(async (tx) => {
     // Users
     await tx`insert into users (id, display_name, email) values
-      ('usr_alex', 'Alex Rivera', 'alex@meetingops.example'),
-      ('usr_sarah', 'Sarah Chen', 'sarah@meetingops.example'),
-      ('usr_daniel', 'Daniel Osei', 'daniel@meetingops.example')`;
+      ('usr_alex', 'Alex Rivera', 'alex@kestrel.example'),
+      ('usr_sarah', 'Sarah Chen', 'sarah@kestrel.example'),
+      ('usr_daniel', 'Daniel Osei', 'daniel@kestrel.example')`;
 
     // Participants
     await tx`insert into participants (id, user_id, display_name, email, timezone, working_hours, focus_blocks) values
-      ('par_alex', 'usr_alex', 'Alex Rivera', 'alex@meetingops.example', 'America/Los_Angeles',
+      ('par_alex', 'usr_alex', 'Alex Rivera', 'alex@kestrel.example', 'America/Los_Angeles',
         ${JSON.stringify(STANDARD_HOURS)}::jsonb, '[]'::jsonb),
-      ('par_sarah', 'usr_sarah', 'Sarah Chen', 'sarah@meetingops.example', 'America/Los_Angeles',
+      ('par_sarah', 'usr_sarah', 'Sarah Chen', 'sarah@kestrel.example', 'America/Los_Angeles',
         ${JSON.stringify(STANDARD_HOURS)}::jsonb, '[]'::jsonb),
-      ('par_daniel', 'usr_daniel', 'Daniel Osei', 'daniel@meetingops.example', 'America/Los_Angeles',
+      ('par_daniel', 'usr_daniel', 'Daniel Osei', 'daniel@kestrel.example', 'America/Los_Angeles',
         ${JSON.stringify(STANDARD_HOURS)}::jsonb, ${JSON.stringify(DANIEL_FOCUS_BLOCKS)}::jsonb)`;
 
     // Project
@@ -209,6 +209,10 @@ async function truncateAll(sql: Sql): Promise<void> {
       audit_events,
       idempotency_records,
       sessions,
+      integration_events,
+      ingestion_records,
+      external_references,
+      integration_connections,
       follow_ups,
       action_items,
       decisions,

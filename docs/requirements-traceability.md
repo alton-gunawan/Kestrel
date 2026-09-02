@@ -1,4 +1,4 @@
-# MeetingOps — Requirements Traceability
+# Kestrel — Requirements Traceability
 
 This document maps every requirement from the project's source-of-truth documents to:
 
@@ -7,7 +7,7 @@ This document maps every requirement from the project's source-of-truth document
 - **Golden-demo evidence** — how the golden scenario (`06_GOLDEN_DEMO.md`) demonstrates it
 - **Status** — `PLANNED` → `PASS` / `FAIL` / `UNVERIFIED` / `BLOCKED`
 
-Sources: `MeetingOps_PRD.md`, `docs/00_TECH_STACK.md`, `docs/01_BUILD_INSTRUCTIONS.md`, `docs/02_WEBMCP_SPEC.md`, `docs/03_DOMAIN_DATA_API.md`, `docs/04_AGENT_INTERACTION.md`, `docs/05_UX_UI_SPEC.md`, `docs/06_GOLDEN_DEMO.md`, `docs/07_TEST_AND_VERIFICATION.md`, `docs/08_DEVPOST_SUBMISSION.md`, `docs/09_RELEASE_CHECKLIST.md`.
+Sources: `Kestrel_PRD.md`, `docs/00_TECH_STACK.md`, `docs/01_BUILD_INSTRUCTIONS.md`, `docs/02_WEBMCP_SPEC.md`, `docs/03_DOMAIN_DATA_API.md`, `docs/04_AGENT_INTERACTION.md`, `docs/05_UX_UI_SPEC.md`, `docs/06_GOLDEN_DEMO.md`, `docs/07_TEST_AND_VERIFICATION.md`, `docs/08_DEVPOST_SUBMISSION.md`, `docs/09_RELEASE_CHECKLIST.md`.
 
 Note: `docs/01_BUILD_INSTRUCTIONS.md` names this document `IMPLEMENTATION_TRACEABILITY.md`; the harness prompt and this repo's canonical name is `requirements-traceability.md` (see `implementation-decisions.md`, D-002).
 
@@ -42,8 +42,8 @@ Status legend:
 
 | ID | Requirement | Implementation | Test | Golden-demo evidence | Status |
 | --- | --- | --- | --- | --- | --- |
-| WM-1 | Native `document.modelContext.registerTool(...)` — real API, no fake wrapper | `apps/web/src/webmcp/register.ts` — registers only when `'modelContext' in document` | Playwright with conforming WebMCP API stub + native browser verification (Phase 10) | Agent discovers tools in supported client | PASS (native registration verified in Chrome 153; page-side native execution architecturally unavailable — see webmcp-native-verification.md) |
-| WM-2 | Tool catalog — read-only: `get_today_overview`, `get_meeting`, `get_calendar_context`, `find_available_slots`, `get_project_context`, `get_open_actions`, `get_decisions`, `get_meeting_activity` | `apps/web/src/webmcp/tools/*.ts` | WebMCP tool tests (schema + execution) | Agent reads context before proposing | PASS |
+| WM-1 | Native `document.modelContext.registerTool(...)` — real API, no fake wrapper | `apps/web/src/webmcp/register.ts` — registers only when `'modelContext' in document` | Playwright with conforming WebMCP API stub + native browser verification (Phase 10) | Agent discovers tools in supported client | PASS (native registration verified in Chrome 153 for the 20-tool catalog; the 21st tool `get_integrations` native registration is UNVERIFIED — see webmcp-native-verification.md) |
+| WM-2 | Tool catalog — read-only: `get_today_overview`, `get_meeting`, `get_calendar_context`, `find_available_slots`, `get_project_context`, `get_open_actions`, `get_decisions`, `get_meeting_activity`, `get_integrations` | `apps/web/src/webmcp/tools/*.ts` + `packages/contracts/src/webmcp-tool-catalog.ts` (21 tools) | WebMCP tool tests (schema + execution) | Agent reads context before proposing | PASS |
 | WM-3 | Tool catalog — proposal: `prepare_meeting_proposal`, `update_meeting_proposal`, `prepare_agenda_proposal`, `prepare_followup_proposal` | same | same | `prepare_meeting_proposal` + `prepare_agenda_proposal` steps | PASS |
 | WM-4 | Tool catalog — mutating/verification: `create_meeting`, `update_meeting`, `create_agenda_item`, `record_decision`, `create_action_item`, `assign_action_item`, `schedule_followup`, `verify_meeting_state` | same | same | `create_meeting`, `create_agenda_item`, `verify_meeting_state` execution steps | PASS |
 | WM-5 | Strict input schemas: opaque string IDs, date/time formats, unknown fields rejected, min/max lengths, array bounds, exact enums | Zod schemas in `packages/contracts` converted to JSON Schema | Schema unit tests (AJV with `additionalProperties:false`) | Malformed input demo-safe | PASS |
@@ -53,7 +53,8 @@ Status legend:
 | WM-9 | State-aware exposure; stale tools must not cause invalid state | Server-side state validation on every tool call; `INVALID_STATE` errors; registration via AbortSignal cleanup on session change | Integration + WebMCP tests | `record_decision` blocked before meeting completion | PASS |
 | WM-10 | No hallucinated side effects; verification reports actual persisted state; local calendar domain model clearly labeled | `verify_meeting_state` compares expectation vs DB; UI labels calendar as local domain model | Verification tests | `verify_meeting_state` output shown | PASS |
 | WM-11 | Register tools only when WebMCP supported; human UI works without WebMCP | Feature detection; status badge; all UI actions available without WebMCP | E2E with WebMCP absent | Manual fallback usable | PASS |
-| WM-12 | Native verification in supported browser/client recorded (browser, version, URL, prompts, outputs, timestamps) | `docs/webmcp-native-verification.md` | Manual verification Phase 10 | Submission evidence | PASS |
+| WM-12 | Native verification in supported browser/client recorded (browser, version, URL, prompts, outputs, timestamps) | `docs/webmcp-native-verification.md` | Manual verification Phase 10 | Submission evidence | PASS (20/20 native verified; 21-tool re-verification pending — UNVERIFIED for `get_integrations`) |
+| WM-13 | Integration status read tool: `get_integrations` (read-only; provider catalog + connection status; no connect/disconnect via tools) | `packages/contracts/src/webmcp-tool-catalog.ts`, `apps/web/src/webmcp/adapter.ts` → `GET /api/integrations` | Contracts catalog test (21 tools, readOnlyHint) + WebMCP E2E | Agent reads integration status before proposing | PASS |
 
 ## 3. Domain, data, API (03_DOMAIN_DATA_API)
 
@@ -74,6 +75,23 @@ Status legend:
 | DOM-13 | REST endpoints incl. `GET /api/overview`, meetings CRUD, proposals, approve, agenda-items, decisions, actions, follow-ups, activity | `apps/api/src/routes/*.ts` | API integration tests | All UI/agent flows | PASS |
 | DOM-14 | API principles: Zod validation, stable error codes, request ID on every response, JSON only, no business rules in routes, CORS allowlist, idempotency keys | `apps/api/src/app.ts`, `errors.ts`, hooks | API integration tests | N/A | PASS |
 | DOM-15 | Repository boundary: route → application service → domain service → repository → Drizzle → PostgreSQL; WebMCP adapter calls same services via authenticated API client | Layered modules; web adapter uses fetch API client | Architecture/unit tests | Same rules both paths | PASS |
+
+## 3b. Integrations (direction change — Kestrel_Perubahan_Arah_…, §12)
+
+| ID | Requirement | Implementation | Test | Golden-demo evidence | Status |
+| --- | --- | --- | --- | --- | --- |
+| INT-1 | Provider abstraction by capability (Calendar, Meeting Intelligence, Communication, Project, Meeting Platform, Automation); providers are not core domain entities | `apps/api/src/integrations/types.ts` (capability ports), `registry.ts` (registry + catalog) | `apps/api/src/integration/integrations.test.ts` | Optional integrations demo segment | PASS |
+| INT-2 | Catalog of 13 providers; MVP implements demo adapters for Google Calendar + Fathom; others declared "Not implemented in MVP" | `packages/contracts/src/integrations.ts` (`INTEGRATION_PROVIDERS`, `PROVIDER_CAPABILITIES_BY_PROVIDER`); `registry.ts` | Contracts + integration tests | Demo segment shows demo labels | PASS |
+| INT-3 | Google Calendar demo adapter: local demo calendar model, `demo_gcal_*` external id, `externalUrl: null` — never claims a real external event | `apps/api/src/integrations/providers/googleCalendarDemo.ts` | Integration test (sync summary contains 'local demo calendar model') | Demo segment step 1–2 | PASS |
+| INT-4 | Fathom demo adapter: deterministic demo transcript → proposal-ready analysis (payment blocker, data migration); no committed decisions/actions | `apps/api/src/integrations/providers/fathomDemo.ts`, `canonical.ts` (`analyzeTranscript`) | Integration test (sync summary contains 'proposal-ready') | Demo segment step 3 | PASS |
+| INT-5 | Persistence: integration_connections, integration_events, external_references, ingestion_records (migration 0001) | `apps/api/src/db/schema.ts`, `apps/api/drizzle/0001_eager_crystal.sql`; `repositories/drizzle.ts` (`DrizzleIntegrationRepository`) | Clean-DB migration + repository tests | Demo reset truncates/rewrites incl. integration tables | PASS |
+| INT-6 | IntegrationService: catalog, connect, disconnect (retains canonical data), sync, ingestWebhook, activity; connect duplicate → CONFLICT; unknown provider → VALIDATION_ERROR; idempotency replay | `apps/api/src/services/integrationService.ts`; routes `apps/api/src/routes/integrations.ts` | `integrations.test.ts` (15 tests) | Demo segment connect/disconnect | PASS |
+| INT-7 | Webhook ingestion: requires connected provider (INVALID_STATE), idempotent per (providerId, sourceEventId), invalid payload → failed ingestion record + VALIDATION_ERROR, auditable | `integrationService.ingestWebhook` + `ingestion_records` unique index | Integration tests (duplicate eventId, invalid payload, unconnected provider) | N/A | PASS |
+| INT-8 | Untrusted-data rule: transcript/calendar/webhook data → Zod validation → canonical mapping → proposals awaiting human approval; never committed directly; integrations never bypass domain invariants or write directly to DB | `canonical.ts` (parseTranscriptInput/parseCalendarContext), `analyzeTranscript` | Integration tests assert no Decision/ActionItem created by ingestion | Demo segment step 3 note | PASS |
+| INT-9 | Provider failure states: sync error → connection status `error` + lastError + 'sync.failed' event + UNAVAILABLE error; never reported as success | `integrationService.sync` | Integration test (disconnected sync → INVALID_STATE; failure path) | N/A | PASS |
+| INT-10 | User-facing Integrations UI: provider cards by capability, connect with scope confirmation, sync/disconnect, last error, activity list, loading/empty/error states; route `/integrations`, nav "Integrations" | `apps/web/src/pages/IntegrationsPage.tsx`, `apps/web/src/App.tsx` | Web typecheck + build; E2E `e2e/tests/integrations.spec.ts` (catalog, connect→sync→disconnect, activity) | Demo segment (judge path ~30s) | PASS |
+| INT-11 | WebMCP exposure: `get_integrations` read-only tool (catalog + connection status); connecting/disconnecting is UI-only, not a tool | `packages/contracts/src/webmcp-tool-catalog.ts` (21 tools), `apps/web/src/webmcp/adapter.ts` | WM-13 (catalog + E2E) | N/A | PASS |
+| INT-12 | One connection per provider (documented MVP simplification) | `integrationService.connect` (CONFLICT if already connected) | Integration test | N/A | PASS |
 
 ## 4. Agent interaction (04_AGENT_INTERACTION)
 
@@ -127,16 +145,16 @@ Status legend:
 | --- | --- | --- | --- | --- | --- |
 | TEST-1 | Four claims separated (code correctness, workflow correctness, native WebMCP interop, deployed judge-path readiness) | Separate suites; honest statuses | Suite structure | Submission narrative | PASS |
 | TEST-2 | Unit: availability intersection, focus-block exclusion, meeting validation, agenda ordering, decision creation, action assignment, follow-up logic, approval invalidation, revision/concurrency, idempotency | `apps/api/src/**/*.test.ts` (Vitest) | `pnpm test` | N/A | PASS |
-| TEST-3 | Integration: create/edit meeting, propose/approve/apply, agenda, decision, action, follow-up, audit events, stale revision rejection | API + DB integration tests | `pnpm test` | N/A | PASS |
-| TEST-4 | WebMCP: registration, no duplicates, invalid schema caught; discovery; read tools; proposal tools don't mutate committed state; mutation approval enforcement; stale rejection; malformed input; negative (fake approval fields, unknown IDs, unauthorized, duplicate idempotency key, timeout no false success) | `e2e/webmcp*.spec.ts` + Vitest tool tests | `pnpm test:e2e` | N/A | PASS |
-| TEST-5 | E2E golden scenario passes | `e2e/golden-demo.spec.ts` | `pnpm test:e2e` | The demo itself | PASS |
+| TEST-3 | Integration: create/edit meeting, propose/approve/apply, agenda, decision, action, follow-up, audit events, stale revision rejection, integrations (connect/disconnect/sync, webhook idempotency, provider failure, invalid payload) | API + DB integration tests (incl. `apps/api/src/integration/integrations.test.ts`) | `pnpm test` — 73 tests / 6 files | N/A | PASS |
+| TEST-4 | WebMCP: registration, no duplicates, invalid schema caught; discovery; read tools; proposal tools don't mutate committed state; mutation approval enforcement; stale rejection; malformed input; negative (fake approval fields, unknown IDs, unauthorized, duplicate idempotency key, timeout no false success); `get_integrations` read-only status | `e2e/webmcp*.spec.ts` + Vitest tool tests | `pnpm test:e2e` — 5 tests incl. "registers exactly the 21 documented tools" | N/A | PASS |
+| TEST-5 | E2E golden scenario passes, incl. pure-UI path; integrations UI (catalog/connect/sync/disconnect/activity) covered | `e2e/golden-demo.spec.ts`, `e2e/integrations.spec.ts` | `pnpm test:e2e` — 16 tests total | The demo itself | PASS |
 | TEST-6 | Accessibility: keyboard-only workflow, dialog focus, SR labels, reduced motion, color-independent status | axe + keyboard E2E | `pnpm test:a11y` | N/A | PASS |
 | TEST-7 | Security: CORS allowlist, server validation, authorization, error redaction, prompt-injection data untrusted, no secrets in client bundle | API config + audit scripts | Security tests | N/A | PASS (static review + tests; no live deployment smoke) |
 | TEST-8 | Release gates P0/P1/P2 | `docs/final-verification-report.md` gate table | Final audit | N/A | PASS |
 | TEST-9 | Required commands: dev, build, preview, typecheck, lint, test, test:e2e, check | Root `package.json` scripts | Script execution | N/A | PASS |
 | TEST-10 | Native WebMCP verification record (client, version, URL, prompts, outputs, timestamps); mocks don't count | `docs/webmcp-native-verification.md` | Manual Phase 10 | Evidence file | PASS |
 
-## 8. PRD user stories & functional requirements (MeetingOps_PRD)
+## 8. PRD user stories & functional requirements (Kestrel_PRD)
 
 | ID | Requirement | Implementation | Test | Golden-demo evidence | Status |
 | --- | --- | --- | --- | --- | --- |

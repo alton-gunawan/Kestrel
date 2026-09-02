@@ -1,7 +1,7 @@
-# MeetingOps v2 — Technology Stack
+# Kestrel v2 — Technology Stack
 
 ## Purpose
-This is the canonical technical stack for MeetingOps. Any implementation decision must prefer this document unless a higher-priority requirement in the product specification requires otherwise.
+This is the canonical technical stack for Kestrel. Any implementation decision must prefer this document unless a higher-priority requirement in the product specification requires otherwise.
 
 ## Frontend
 - React 19+
@@ -27,14 +27,19 @@ Astryx is currently beta, built on React 19+ and StyleX, and provides an agent-r
 ## Client/server boundary
 - Browser owns UI state and WebMCP registration.
 - Backend owns durable business state, validation, authorization, persistence, and audit records.
-- WebMCP tools and human UI must call the same domain services; never duplicate business rules in tool handlers.
+- WebMCP tools, the human UI, and integration adapters must call the same domain services; never duplicate business rules in tool or adapter handlers.
+
+## Integrations
+- External systems connect through a capability-based provider abstraction (CalendarProvider, MeetingIntelligenceProvider, CommunicationProvider, ProjectProvider, MeetingPlatformProvider, AutomationProvider) with adapters, not scattered vendor calls in domain logic.
+- Provider data (transcripts, calendar content, webhook payloads) is untrusted input: validated with Zod, mapped to canonical Kestrel concepts, and surfaced as proposals awaiting human approval — never committed directly.
+- MVP ships demo adapters (Google Calendar, Fathom) that are clearly labeled and never claim a real external side effect; webhook ingestion is idempotent and auditable.
 
 ## AI
 - No embedded LLM.
 - No Vercel AI SDK.
 - No LangChain/LangGraph dependency.
 - Reasoning is supplied by an external WebMCP-capable agent such as ChatGPT.
-- MeetingOps exposes capabilities; the agent supplies reasoning and natural-language intent.
+- Kestrel exposes capabilities; the agent supplies reasoning and natural-language intent.
 
 ## Testing
 - Vitest for domain/unit/integration tests.

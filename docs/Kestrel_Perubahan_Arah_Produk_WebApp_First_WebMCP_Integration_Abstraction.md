@@ -1,4 +1,4 @@
-**MeetingOps**
+**Kestrel**
 
 **Perubahan Arah Produk & Arsitektur**
 
@@ -6,22 +6,22 @@
 
 Dokumen perubahan ini menetapkan baseline baru untuk menyelaraskan PRD,
 UX/UI, domain/API, WebMCP, integrations, testing, golden demo, dan
-roadmap implementasi MeetingOps. Dokumen sumber asli tidak diubah
+roadmap implementasi Kestrel. Dokumen sumber asli tidak diubah
 melalui dokumen ini; file ini adalah versi perubahan yang menjadi acuan
 revisi berikutnya.
 
 **KEPUTUSAN INTI**
 
-MeetingOps adalah user-facing web application terlebih dahulu. Web App
+Kestrel adalah user-facing web application terlebih dahulu. Web App
 adalah tempat utama user melakukan pekerjaan operasional dan CRUD.
 WebMCP adalah alternative interface yang memungkinkan external agent
 mengoperasikan capability yang sama. Integrations adalah product
-capability untuk menghubungkan MeetingOps ke provider eksternal melalui
+capability untuk menghubungkan Kestrel ke provider eksternal melalui
 abstraction layer yang konsisten.
 
 # 1. Ringkasan Arah Baru
 
-Arah baru tidak mengubah thesis produk MeetingOps. Produk tetap
+Arah baru tidak mengubah thesis produk Kestrel. Produk tetap
 bertujuan mengubah meeting menjadi execution melalui rangkaian context →
 agenda → meeting → decisions → action items → follow-up. Perubahan
 utamanya adalah penegasan bahwa pengalaman produk utama berada di web
@@ -35,11 +35,11 @@ tersebut digunakan.
 | Business logic              | Shared application/domain services | UI dan WebMCP tidak boleh memiliki aturan bisnis berbeda.                   |
 | Integration model           | Provider abstraction               | Provider eksternal dapat diganti/ditambah tanpa mengubah domain model inti. |
 | Approval                    | Human-controlled                   | Consequential mutation tetap membutuhkan approval manusia.                  |
-| Meeting intelligence        | Third-party provider               | MeetingOps tidak membangun transcription engine sendiri untuk sementara.    |
+| Meeting intelligence        | Third-party provider               | Kestrel tidak membangun transcription engine sendiri untuk sementara.    |
 
 # 2. Prinsip Produk
 
-- User dapat menjalankan MeetingOps secara penuh dari web app tanpa
+- User dapat menjalankan Kestrel secara penuh dari web app tanpa
   memahami WebMCP.
 
 - CRUD dan operational workflows adalah fondasi produk; WebMCP bukan
@@ -115,7 +115,7 @@ events, media/transcript, atau external execution capability.
 
 Semua integrasi eksternal harus diorganisasikan berdasarkan capability
 provider, bukan berdasarkan implementasi vendor. Ini membuat domain
-MeetingOps tetap stabil walaupun provider berubah.
+Kestrel tetap stabil walaupun provider berubah.
 
 | **Abstraction**             | **Contoh provider**                | **Capability yang diberikan**                                                                   |
 |-----------------------------|------------------------------------|-------------------------------------------------------------------------------------------------|
@@ -126,9 +126,9 @@ MeetingOps tetap stabil walaupun provider berubah.
 | MeetingPlatformProvider     | Zoom, Google Meet                  | Meeting link, meeting lifecycle metadata, provider-side meeting details.                        |
 | AutomationProvider          | Zapier atau automation layer lain  | Long-tail integrations dan event-driven workflows tanpa membuat native connector satu per satu. |
 
-Aturan utama: domain model MeetingOps tidak mengenal “Fathom Action
+Aturan utama: domain model Kestrel tidak mengenal “Fathom Action
 Item” atau “Linear Action Item” sebagai entity inti. Provider-specific
-objects dipetakan menjadi canonical MeetingOps concepts seperti
+objects dipetakan menjadi canonical Kestrel concepts seperti
 MeetingContext, TranscriptInput, Decision, ActionItem, FollowUp, atau
 ExternalReference.
 
@@ -139,7 +139,7 @@ ExternalReference.
 | CalendarProvider            | getCalendarContext(), findAvailability(), createEvent(), updateEvent()            | Method yang menulis ke external calendar harus eksplisit dan approval-aware. |
 | MeetingIntelligenceProvider | getMeeting(), getTranscript(), getSummary(), getActionItems(), subscribeWebhook() | Raw outputs masuk sebagai untrusted inputs sebelum dianalisis.               |
 | CommunicationProvider       | sendNotification(), sendFollowUp()                                                | Pengiriman eksternal adalah consequential action; sebaiknya approval-aware.  |
-| ProjectProvider             | getProjectContext(), getIssues(), createLinkedIssue()                             | Read first; writes only from approved MeetingOps actions.                    |
+| ProjectProvider             | getProjectContext(), getIssues(), createLinkedIssue()                             | Read first; writes only from approved Kestrel actions.                    |
 | MeetingPlatformProvider     | createMeeting(), getMeeting(), getJoinLink()                                      | Optional untuk MVP; tidak boleh menjadi prerequisite golden path.            |
 | AutomationProvider          | emitEvent(), registerRecipe()                                                     | Future/optional layer untuk long-tail automation.                            |
 
@@ -149,7 +149,7 @@ Untuk hackathon, jangan implement semua provider. Implement satu
 provider yang membuktikan lifecycle, tetapi desain abstraction dari awal
 agar provider kedua dapat masuk tanpa mengubah domain model.
 
-| **Prioritas** | **Integration**         | **Peran dalam MeetingOps**                          | **Keputusan**                                                                          |
+| **Prioritas** | **Integration**         | **Peran dalam Kestrel**                          | **Keputusan**                                                                          |
 |---------------|-------------------------|-----------------------------------------------------|----------------------------------------------------------------------------------------|
 | P0            | Google Calendar         | Scheduling, availability, calendar context          | Direkomendasikan sebagai calendar integration utama jika external calendar dibutuhkan. |
 | P0            | Fathom                  | Transcript, summary, action items                   | Pilihan pertama untuk Meeting Intelligence integration.                                |
@@ -180,7 +180,7 @@ dan bagaimana disconnect/reconnect dilakukan.
 
 # 8. Meeting Intelligence / Transcription
 
-MeetingOps tidak membangun transcription engine sendiri untuk sementara.
+Kestrel tidak membangun transcription engine sendiri untuk sementara.
 Gunakan MeetingIntelligenceProvider abstraction sehingga provider dapat
 diganti tanpa menyentuh domain model inti.
 
@@ -191,7 +191,7 @@ diganti tanpa menyentuh domain model inti.
 | tl;dv        | Pilihan ketiga  | Menyediakan transcript/notes dan webhook; cocok sebagai provider lanjutan setelah abstraction terbukti.                       |
 
 Flow yang dipertahankan: Meeting platform/provider → webhook/API →
-MeetingOps ingestion → untrusted transcript/notes → analysis/proposal →
+Kestrel ingestion → untrusted transcript/notes → analysis/proposal →
 human review/approval → committed Decision/ActionItem/FollowUp.
 
 Raw transcript tidak langsung membuat Decision atau ActionItem. Sistem
@@ -213,21 +213,21 @@ policy.
 
 CommunicationProvider digunakan untuk mengirim reminder, follow-up, atau
 notification setelah user menyetujui perubahan yang akan keluar dari
-MeetingOps. Pengiriman harus memiliki audit trail dan hasil delivery
+Kestrel. Pengiriman harus memiliki audit trail dan hasil delivery
 yang nyata.
 
 ## 9.3 Linear / Project systems
 
 ProjectProvider menyediakan project/issue context untuk meeting
 preparation dan dapat menjadi target execution untuk approved action
-items. Canonical ActionItem tetap berada di MeetingOps; external
+items. Canonical ActionItem tetap berada di Kestrel; external
 issue/PR hanya menjadi linked reference atau synchronized
 representation.
 
 ## 9.4 Automation
 
 AutomationProvider adalah lapisan ekspansi, bukan core dependency.
-Fungsinya menjangkau aplikasi di luar connector native MeetingOps
+Fungsinya menjangkau aplikasi di luar connector native Kestrel
 setelah core workflows matang.
 
 # 10. CRUD dan User Operations
@@ -270,7 +270,7 @@ setelah core workflows matang.
 | Golden Demo                     | Web App harus tetap terlihat mandiri. WebMCP menunjukkan alternative control path. Integration dapat dibuktikan melalui seeded/mock-safe boundary bila third-party connectivity bukan bagian judge path. |
 | Test & Verification Plan        | Tambahkan tests untuk provider abstraction, webhook ingestion, mapping canonical entities, provider failure, reconnect/disconnect, dan golden workflow tanpa WebMCP.                                     |
 | Production Release Checklist    | Tambahkan integration health, secure credential handling, webhook verification, idempotent ingestion, provider-specific failure states, dan user-facing disconnect flows.                                |
-| Devpost Submission Pack         | Narasi utama: MeetingOps adalah meeting operations web app. WebMCP dan integrations menjadi differentiators yang memperluas cara sistem digunakan, bukan menggantikan aplikasi.                          |
+| Devpost Submission Pack         | Narasi utama: Kestrel adalah meeting operations web app. WebMCP dan integrations menjadi differentiators yang memperluas cara sistem digunakan, bukan menggantikan aplikasi.                          |
 
 # 13. Batasan yang Tidak Berubah
 
@@ -338,14 +338,14 @@ setelah core workflows matang.
 4. Bangun proposal/review/approval UX sebagai common human-control layer.
 5. Bangun Integrations UI dan provider abstraction contracts.
 6. Implementasikan satu provider pertama: Google Calendar untuk calendar capability dan/atau Fathom untuk meeting intelligence sesuai batas waktu demo.
-7. Implementasikan ingestion/mapping provider → canonical MeetingOps concepts, termasuk idempotency dan audit.
+7. Implementasikan ingestion/mapping provider → canonical Kestrel concepts, termasuk idempotency dan audit.
 8. Tambahkan Slack dan Linear hanya setelah core lifecycle stabil, menggunakan CommunicationProvider dan ProjectProvider.
 9. Expose capability yang sudah stabil melalui native WebMCP.
 10. Lakukan E2E, accessibility, security, native WebMCP verification, provider failure tests, dan golden demo rehearsal.
 
 # 16. Mental Model Final
 
-MeetingOps bukan “aplikasi WebMCP”. MeetingOps adalah web application
+Kestrel bukan “aplikasi WebMCP”. Kestrel adalah web application
 untuk meeting operations yang dapat dioperasikan manusia secara langsung
 dan dapat pula dikendalikan oleh external agent melalui WebMCP. Di
 dalamnya, integrations menyediakan konteks dan koneksi ke sistem
@@ -369,5 +369,5 @@ Dokumen ini diturunkan dari PRD v2, WebMCP Technical Specification,
 Domain/Data Model and API Contract, Agent Interaction Specification,
 UX/UI Specification, Build Instructions for Claude Code, Golden Demo,
 Test & Verification Plan, Devpost Submission Pack, dan Production
-Release Checklist MeetingOps yang telah diberikan sebelumnya, ditambah
+Release Checklist Kestrel yang telah diberikan sebelumnya, ditambah
 keputusan arah integrasi yang telah disepakati dalam percakapan ini.

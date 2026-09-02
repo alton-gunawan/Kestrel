@@ -1,6 +1,6 @@
 /**
  * Typed API client. One channel per client instance ('ui' | 'webmcp') is sent
- * as the X-MeetingOps-Channel header (audit classification only — D-011).
+ * as the X-Kestrel-Channel header (audit classification only — D-011).
  * Errors surface as ApiError with the server's stable code.
  */
 export type Channel = 'ui' | 'webmcp';
@@ -34,7 +34,7 @@ export async function apiFetch<T>(
     method,
     headers: {
       'content-type': 'application/json',
-      'x-meetingops-channel': channel,
+      'x-kestrel-channel': channel,
     },
     credentials: 'same-origin',
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
@@ -50,7 +50,7 @@ export async function apiFetch<T>(
 }
 
 /* ---------------------------- response types --------------------------- */
-/* Entity shapes come from @meetingops/contracts; these are the wire shapes. */
+/* Entity shapes come from @kestrel/contracts; these are the wire shapes. */
 
 import type {
   ActionItem,
@@ -65,7 +65,7 @@ import type {
   Proposal,
   User,
   VerificationReport,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 
 export type {
   ActionItem,
@@ -213,5 +213,61 @@ export const api = {
       `/api/activity?${new URLSearchParams(filter).toString()}`,
     ),
 
+  integrations: () => apiFetch<{ providers: IntegrationProviderView[] }>('GET', '/api/integrations'),
+  connectIntegration: (input: Record<string, unknown>) =>
+    apiFetch<{ connection: IntegrationConnectionView }>('POST', '/api/integrations/connect', input),
+  disconnectIntegration: (connectionId: string, idempotencyKey: string) =>
+    apiFetch<{ connection: IntegrationConnectionView }>(
+      'POST',
+      `/api/integrations/${encodeURIComponent(connectionId)}/disconnect`,
+      { idempotencyKey },
+    ),
+  syncIntegration: (connectionId: string, idempotencyKey: string) =>
+    apiFetch<{ connection: IntegrationConnectionView; result: { ok: boolean; summary: string } }>(
+      'POST',
+      `/api/integrations/${encodeURIComponent(connectionId)}/sync`,
+      { idempotencyKey },
+    ),
+  integrationActivity: (connectionId?: string) =>
+    apiFetch<{ events: IntegrationEventView[] }>(
+      'GET',
+      `/api/integrations/activity${connectionId ? `?connectionId=${encodeURIComponent(connectionId)}` : ''}`,
+    ),
+
   resetDemo: () => apiFetch<{ ok: boolean; message: string }>('POST', '/api/demo/reset', {}),
 };
+
+/* --------------------------- integration views ---------------------------- */
+
+export interface IntegrationProviderView {
+  providerId: string;
+  displayName: string;
+  description: string;
+  capabilities: string[];
+  demo: boolean;
+  connection: IntegrationConnectionView | null;
+}
+
+export interface IntegrationConnectionView {
+  id: string;
+  providerId: string;
+  capability: string;
+  status: 'disconnected' | 'connecting' | 'connected' | 'error';
+  displayName: string;
+  scopes: string[];
+  config: Record<string, unknown> | null;
+  lastSyncAt: string | null;
+  lastError: { code: string; message: string; at: string } | null;
+  connectedAt: string | null;
+}
+
+export interface IntegrationEventView {
+  id: string;
+  connectionId: string;
+  providerId: string;
+  eventType: string;
+  status: 'ok' | 'error';
+  summary: string;
+  details: unknown;
+  occurredAt: string;
+}

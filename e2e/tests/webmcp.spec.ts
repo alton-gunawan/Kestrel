@@ -32,6 +32,7 @@ const REQUIRED_TOOLS = [
   'get_open_actions',
   'get_decisions',
   'get_meeting_activity',
+  'get_integrations',
   'prepare_meeting_proposal',
   'update_meeting_proposal',
   'prepare_agenda_proposal',
@@ -48,12 +49,12 @@ const REQUIRED_TOOLS = [
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(() => window.__MEETINGOPS_POLYFILL_TOOLS__ !== undefined, undefined, {
+  await page.waitForFunction(() => window.__KESTREL_POLYFILL_TOOLS__ !== undefined, undefined, {
     timeout: 15_000,
   });
 });
 
-test('registers exactly the 20 documented tools @webmcp', async ({ page }) => {
+test('registers exactly the 21 documented tools @webmcp', async ({ page }) => {
   const names = await page.evaluate(async () => {
     const ctx = document.modelContext!;
     const tools = await ctx.getTools();
@@ -102,14 +103,14 @@ test('UI status honestly reports polyfill mode (no false native claim) @webmcp',
 
 test('tool results use the ok/error envelope with stable error codes @webmcp', async ({ page }) => {
   const bad = await page.evaluate(async () => {
-    const tools = window.__MEETINGOPS_POLYFILL_TOOLS__!;
+    const tools = window.__KESTREL_POLYFILL_TOOLS__!;
     return await tools.get('get_meeting')!.execute({ meetingId: 'mtg_does_not_exist' });
   });
   expect(bad.ok).toBe(false);
   expect((bad.error as { code: string }).code).toBe('NOT_FOUND');
 
   const good = await page.evaluate(async () => {
-    const tools = window.__MEETINGOPS_POLYFILL_TOOLS__!;
+    const tools = window.__KESTREL_POLYFILL_TOOLS__!;
     return await tools.get('get_meeting')!.execute({ meetingId: 'mtg_prev_sync4' });
   });
   expect(good.ok).toBe(true);
@@ -119,7 +120,7 @@ test('tool results use the ok/error envelope with stable error codes @webmcp', a
 
 test('outcome tools propose first and never execute without approval @webmcp', async ({ page }) => {
   const proposed = await page.evaluate(async () => {
-    const tools = window.__MEETINGOPS_POLYFILL_TOOLS__!;
+    const tools = window.__KESTREL_POLYFILL_TOOLS__!;
     return await tools.get('create_action_item')!.execute({
       meetingId: 'mtg_prev_sync4',
       title: 'E2E: verify payment fix',
@@ -135,7 +136,7 @@ test('outcome tools propose first and never execute without approval @webmcp', a
   expect((proposed.data as { proposal: { status: string } }).proposal.status).toBe('pending');
 
   const attempted = await page.evaluate(async (id) => {
-    const tools = window.__MEETINGOPS_POLYFILL_TOOLS__!;
+    const tools = window.__KESTREL_POLYFILL_TOOLS__!;
     return await tools.get('create_action_item')!.execute({
       meetingId: 'mtg_prev_sync4',
       title: 'E2E: verify payment fix',

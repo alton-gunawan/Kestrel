@@ -10,12 +10,13 @@ import helmet from '@fastify/helmet';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import { randomUUID } from 'node:crypto';
-import { AppError, HTTP_STATUS_BY_CODE, isErrorCode } from '@meetingops/contracts';
+import { AppError, HTTP_STATUS_BY_CODE, isErrorCode } from '@kestrel/contracts';
 import { loadEnv, corsOriginAllowlist, type Env } from './config/env.js';
 import { createDb, type DbHandle } from './db/client.js';
 import { createRepos } from './repositories/drizzle.js';
 import type { Repos } from './repositories/types.js';
 import { registerRoutes } from './routes/index.js';
+import { registerIntegrationRoutes } from './routes/integrations.js';
 
 export interface AppOptions {
   readonly env?: Env;
@@ -143,6 +144,7 @@ export async function buildApp(options: AppOptions = {}): Promise<AppHandle> {
   });
 
   registerRoutes(app, { env, repos, db });
+  registerIntegrationRoutes(app, { repos, db });
 
   await app.ready();
 

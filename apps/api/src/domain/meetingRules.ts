@@ -3,7 +3,7 @@
  * "Keep domain logic framework-independent"). No repository or HTTP types
  * appear here.
  */
-import type { MeetingStatus } from '@meetingops/contracts';
+import type { MeetingStatus } from '@kestrel/contracts';
 
 /**
  * Allowed meeting status transitions (FR-1, INV-6). Terminal states have no

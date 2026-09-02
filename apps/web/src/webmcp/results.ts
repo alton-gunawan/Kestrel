@@ -1,5 +1,5 @@
 /**
- * Tool result envelope for every MeetingOps WebMCP tool.
+ * Tool result envelope for every Kestrel WebMCP tool.
  * Success: { ok: true, data, context: { requestId } }
  * Failure: { ok: false, error: { code, message, details? }, context: { requestId } }
  * No fabricated state: data is exactly what the API returned.
@@ -31,7 +31,7 @@ export async function callToolApi<T>(
     }
     return {
       ok: false,
-      error: { code: 'UNAVAILABLE', message: 'MeetingOps API is unreachable' },
+      error: { code: 'UNAVAILABLE', message: 'Kestrel API is unreachable' },
       context: { channel: 'webmcp' },
     };
   }

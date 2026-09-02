@@ -3,7 +3,7 @@
 @layer astryx-base, product;
 
 :root {
-  --meetingops-sidebar-width: 232px;
+  --kestrel-sidebar-width: 232px;
 }
 
 body {

@@ -1,4 +1,4 @@
-# MeetingOps — Domain, Data Model, and API Contract
+# Kestrel — Domain, Data Model, and API Contract
 
 ## Domain entities
 ### User
@@ -143,4 +143,37 @@ Fastify route
           → PostgreSQL
 ```
 
-The WebMCP browser adapter calls the same application service through the authenticated API client rather than maintaining a parallel business implementation.
+The WebMCP browser adapter calls the same application service through the authenticated API client rather than maintaining a parallel business implementation. Integration adapters do the same: provider → adapter → canonical mapping → shared application/domain services.
+
+## Integrations (provider abstraction, external references, ingestion)
+
+Providers are **not** core domain entities. External systems connect through
+capability-based ports (calendar, meeting intelligence, communication, project,
+meeting platform, automation) implemented by adapters that map untrusted
+provider data to canonical Kestrel concepts.
+
+```text
+External system
+  → provider adapter (capability port)
+    → canonical mapping (Zod-validated, untrusted input)
+      → shared application/domain services
+        → repository → Drizzle → PostgreSQL
+```
+
+### Tables (migration `0001_eager_crystal.sql`)
+- `integration_connections` — one per provider: status (`disconnected | connecting | connected | error`), scopes, config, `lastSyncAt`, `lastError`, `connectedAt`.
+- `integration_events` — per-connection event log (connect, disconnect, sync, webhook received, failures).
+- `external_references` — mapping provider + externalId ↔ entityType + entityId.
+- `ingestion_records` — idempotency keyed on (providerId, sourceEventId).
+
+### API endpoints
+- `GET /api/integrations` — provider catalog + connection status (requires session).
+- `POST /api/integrations/connect` — connect a provider (idempotency key required; duplicate → `CONFLICT`).
+- `POST /api/integrations/:connectionId/disconnect` — disconnect; canonical Kestrel data is retained.
+- `POST /api/integrations/:connectionId/sync` — pull provider data (calendar context / transcript analysis).
+- `GET /api/integrations/activity?connectionId=` — integration event log.
+- `POST /api/integrations/webhooks/:providerId` — idempotent, auditable ingestion of untrusted webhook payloads (Zod-validated; provider from URL path cannot be spoofed; unconnected provider → `INVALID_STATE`).
+
+### Canonical mapping rules
+- Transcript input is bounded and validated; raw transcripts become proposal-ready analysis awaiting human approval — never committed as Decision/ActionItem.
+- Calendar context maps to Kestrel' local calendar domain model (demo adapters are honest: no real external side effects are claimed).

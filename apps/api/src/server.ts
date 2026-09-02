@@ -26,7 +26,7 @@ async function main(): Promise<void> {
   const handle = await buildApp({ env });
 
   await handle.app.listen({ port: env.API_PORT, host: env.API_HOST });
-  console.log(`[api] MeetingOps API listening on http://${env.API_HOST}:${env.API_PORT}`);
+  console.log(`[api] Kestrel API listening on http://${env.API_HOST}:${env.API_PORT}`);
 
   const shutdown = async (signal: string): Promise<void> => {
     console.log(`[api] ${signal} received; shutting down gracefully`);

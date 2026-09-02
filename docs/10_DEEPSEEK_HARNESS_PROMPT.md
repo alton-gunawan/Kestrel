@@ -1,9 +1,9 @@
 # 10 — DeepSeek Harness Implementation Prompt
 
-You are the lead software engineer responsible for building MeetingOps end-to-end from this repository.
+You are the lead software engineer responsible for building Kestrel end-to-end from this repository.
 
 WORKING DIRECTORY
-You are in the MeetingOps repository root. All requirements are in `./docs/` and persistent constraints are in `./AGENTS.md`.
+You are in the Kestrel repository root. All requirements are in `./docs/` and persistent constraints are in `./AGENTS.md`.
 
 FIRST — DO NOT CODE YET
 1. Read `AGENTS.md`.
@@ -14,7 +14,7 @@ FIRST — DO NOT CODE YET
 6. If something is genuinely unspecified, choose the smallest coherent implementation and record it in `docs/implementation-decisions.md`.
 
 PRODUCT
-MeetingOps is an operational layer that turns meetings into execution:
+Kestrel is an operational layer that turns meetings into execution:
 Goal → Prepare → Propose → Human Review → Approve → Execute → Verify → Follow-up.
 
 Do not build a generic calendar clone. The core experience is meeting lifecycle continuity: schedule/prep → meeting outcomes → executable work → follow-up.
@@ -44,7 +44,7 @@ EXPLICITLY FORBIDDEN
 - speculative microservices/infrastructure
 
 AI BOUNDARY
-The reasoning model lives with the external agent (for example ChatGPT). MeetingOps does not contain an LLM. MeetingOps exposes structured, trustworthy capabilities through WebMCP and executes domain logic.
+The reasoning model lives with the external agent (for example ChatGPT). Kestrel does not contain an LLM. Kestrel exposes structured, trustworthy capabilities through WebMCP and executes domain logic.
 
 ARCHITECTURE
 External Agent/ChatGPT → native WebMCP → WebMCP adapter → domain services → repository → PostgreSQL.

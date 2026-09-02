@@ -8,6 +8,13 @@
       "when": 1788340117024,
       "tag": "0000_nostalgic_blizzard",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788365273629,
+      "tag": "0001_eager_crystal",
+      "breakpoints": true
     }
   ]
 }

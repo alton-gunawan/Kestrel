@@ -11,9 +11,16 @@ import { executeApprovedProposalInputSchema, prepareMeetingProposalInputSchema }
 const ajv = new Ajv({ allErrors: true, strict: false });
 
 describe('webmcp tool catalog', () => {
-  it('contains exactly the 20 documented tools', () => {
+  it('contains exactly the 21 documented tools (20 core + get_integrations)', () => {
     expect(ALL_TOOLS.map((t) => t.name)).toEqual([...REQUIRED_TOOL_NAMES]);
-    expect(REQUIRED_TOOL_NAMES).toHaveLength(20);
+    expect(REQUIRED_TOOL_NAMES).toHaveLength(21);
+  });
+
+  it('exposes integration status as a read-only tool, not a mutation', () => {
+    const integrations = getToolDefinition('get_integrations');
+    expect(integrations).toBeDefined();
+    expect(integrations?.sideEffect).toBe('read');
+    expect(integrations?.annotations.readOnlyHint).toBe(true);
   });
 
   it('does not expose an approval tool', () => {

@@ -1,4 +1,4 @@
-# MeetingOps — Test & Verification Plan
+# Kestrel — Test & Verification Plan
 
 ## Test philosophy
 Separate four claims:
@@ -32,6 +32,14 @@ Do not use one claim as evidence for another.
 - audit events
 - stale revision rejection
 
+### Integrations
+- provider abstraction: registry catalog, capability lookup, declared-but-unimplemented providers
+- connect lifecycle: connect records event + audit; duplicate connect → `CONFLICT`; unknown provider → `VALIDATION_ERROR`; idempotency replay returns the same connection
+- disconnect lifecycle: status → `disconnected`, event recorded, canonical data retained
+- sync: calendar → local demo calendar model summary; meeting intelligence → transcript → proposal-ready summary; provider failure → connection status `error` + `lastError` + `UNAVAILABLE` error (never false success)
+- webhook ingestion: requires connected provider (`INVALID_STATE` otherwise); idempotent per (providerId, sourceEventId); invalid payload → failed ingestion record + `VALIDATION_ERROR`; processed payload → analysis + external reference + event + audit, without committing decisions/actions
+- golden workflow WITHOUT WebMCP: the full propose → approve → execute → verify loop driven purely through the UI
+
 ## WebMCP tests
 ### Registration
 - tools register successfully when API exists
@@ -39,7 +47,7 @@ Do not use one claim as evidence for another.
 - invalid schema is caught during development/tests
 
 ### Discovery
-- required tool names are discoverable in supported environment
+- required tool names are discoverable in supported environment (21-tool catalog, incl. `get_integrations`)
 - state-appropriate tools appear as intended
 
 ### Execution
@@ -48,6 +56,7 @@ Do not use one claim as evidence for another.
 - mutation tools enforce approval
 - stale proposal fails safely
 - malformed input fails safely
+- `get_integrations` returns provider catalog + connection status (read-only)
 
 ### Negative tests
 - fake approval fields rejected
@@ -57,7 +66,9 @@ Do not use one claim as evidence for another.
 - tool timeout/cancellation does not create false success
 
 ## E2E tests
-Golden scenario from `06_GOLDEN_DEMO.md` must pass.
+Golden scenario from `06_GOLDEN_DEMO.md` must pass, including the pure-UI path
+(no WebMCP). Integrations UI is covered: catalog renders, connect, sync status,
+disconnect, and activity list.
 
 ## Accessibility
 - keyboard-only workflow

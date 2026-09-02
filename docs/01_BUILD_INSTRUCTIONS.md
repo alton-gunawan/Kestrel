@@ -1,7 +1,7 @@
-# MeetingOps — Build Instructions for Claude Code
+# Kestrel — Build Instructions for Claude Code
 
 ## Mission
-Build MeetingOps from scratch as a production-quality hackathon MVP using every document in `./docs/` as the authoritative specification.
+Build Kestrel from scratch as a production-quality hackathon MVP using every document in `./docs/` as the authoritative specification.
 
 ## First action: read the spec
 Before creating or editing application code:
@@ -74,8 +74,21 @@ Implement:
 - safe mutation boundaries
 - audit timeline
 
-### Phase 5 — WebMCP
-Implement all tools in `02_WEBMCP_SPEC.md`.
+### Phase 5 — Integrations abstraction (before WebMCP)
+Implement the capability-based provider abstraction so integrations are a
+user-facing product capability, not a vendor bolt-on:
+- capability ports (calendar, meeting intelligence, communication, project, meeting platform, automation)
+- provider registry + catalog
+- persistence: integration connections, events, external references, ingestion records
+- IntegrationService: connect / disconnect / sync / activity / webhook ingestion (idempotent, auditable)
+- canonical mapping for untrusted provider data (transcript → proposal-ready analysis, calendar context)
+- user-facing Integrations UI (connect / configure / sync / disconnect / error states)
+- demo adapters first (Google Calendar, Fathom), clearly labeled and honest about scope
+
+### Phase 6 — WebMCP (over shared services)
+Expose stabilized capabilities through `document.modelContext` tools. Tools are a
+thin alternative interface over the same application services the UI uses — no
+parallel business logic.
 - Register after app boot when WebMCP exists.
 - Cleanly unregister/re-register or update tools as required by current app state.
 - Keep tool handlers thin.
@@ -84,17 +97,17 @@ Implement all tools in `02_WEBMCP_SPEC.md`.
 - Surface errors as structured error codes/messages.
 - Do not expose approval metadata as an agent-controlled input.
 
-### Phase 6 — UI polish
+### Phase 7 — UI polish
 Follow `05_UX_UI_SPEC.md` exactly enough to make the golden demo obvious.
 
-### Phase 7 — Golden demo
+### Phase 8 — Golden demo
 Implement `06_GOLDEN_DEMO.md` exactly and add deterministic seed/reset support.
 
-### Phase 8 — Verification
+### Phase 9 — Verification
 Execute the entire `07_TEST_AND_VERIFICATION.md` suite.
 Fix failures rather than weakening tests.
 
-### Phase 9 — Production hardening
+### Phase 10 — Production hardening
 - security headers
 - CORS allowlist
 - request IDs
@@ -105,9 +118,10 @@ Fix failures rather than weakening tests.
 - rate limiting appropriate for demo endpoints
 - error redaction
 - idempotency protections
+- integration health (provider status, last error), secure credential handling, webhook verification
 - migration/seed/runbook
 
-### Phase 10 — Release
+### Phase 11 — Release
 - production build
 - deploy frontend and backend
 - configure database

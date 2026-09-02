@@ -10,7 +10,7 @@ import type {
   MeetingStatus,
   VerificationCheck,
   VerificationReport,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 
 export interface PersistedMeetingSnapshot {
   readonly id: string;
@@ -25,7 +25,7 @@ export interface PersistedMeetingSnapshot {
 }
 
 /** Re-export shared verification shapes for local convenience. */
-export type { VerificationCheck, VerificationReport } from '@meetingops/contracts';
+export type { VerificationCheck, VerificationReport } from '@kestrel/contracts';
 
 export interface VerificationExpectation {
   readonly status?: MeetingStatus;

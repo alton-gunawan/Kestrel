@@ -1,5 +1,5 @@
 /**
- * Dependency guard: MeetingOps must not contain an embedded LLM or forbidden
+ * Dependency guard: Kestrel must not contain an embedded LLM or forbidden
  * frameworks. See docs/00_TECH_STACK.md ("AI") and docs/01_BUILD_INSTRUCTIONS.md.
  * Run via `pnpm audit:deps`.
  */

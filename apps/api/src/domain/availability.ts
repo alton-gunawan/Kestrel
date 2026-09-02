@@ -12,7 +12,7 @@ import type {
   Participant,
   Slot,
   WorkingHours,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 import {
   addMinutesToInstant,
   alignUpToGrid,
@@ -24,7 +24,7 @@ import {
   weekdayOfDate,
   zonedTimeToUtcMs,
   type Interval,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 
 export const SLOT_GRID_MINUTES = 15;
 export const MAX_SLOTS_RETURNED = 12;

@@ -7,7 +7,7 @@
  * - docs/04_AGENT_INTERACTION.md "Replan on human edits", "Never forge approval"
  * - docs/implementation-decisions.md D-004, D-005, D-025, D-026
  */
-import type { ProposalKind, ProposalStatus } from '@meetingops/contracts';
+import type { ProposalKind, ProposalStatus } from '@kestrel/contracts';
 
 export interface ProposalStateSnapshot {
   readonly id: string;

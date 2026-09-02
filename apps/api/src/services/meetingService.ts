@@ -10,7 +10,7 @@ import { MeetingRevisionConflictError } from '../repositories/types.js';
 import type { ActorContext } from './actorContext.js';
 import { actorRefFor, actorTypeFor } from './actorContext.js';
 import { idFactory } from '../ids.js';
-import { AppError } from '@meetingops/contracts';
+import { AppError } from '@kestrel/contracts';
 import {
   canTransitionMeeting,
   validateActionAssignment,
@@ -33,7 +33,7 @@ import type {
   Meeting,
   Participant,
   Slot,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 
 export interface CreateMeetingInput {
   readonly title: string;
@@ -499,7 +499,7 @@ export class OverviewService {
   }> {
     const nowMs = this.now();
     const nowDate = new Date(nowMs).toISOString().slice(0, 10);
-    const { weekBounds } = await import('@meetingops/contracts');
+    const { weekBounds } = await import('@kestrel/contracts');
     const bounds = weekBounds(nowDate);
     const meetings = await this.repos.meetings.list({ from: bounds.from, to: bounds.to });
     const next = meetings

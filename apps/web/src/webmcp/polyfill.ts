@@ -6,7 +6,7 @@
  * minimal conforming implementation so the adapter, tool catalog, and the
  * entire WebMCP code path can run in development and in Playwright.
  *
- * The polyfill is IDENTIFIED: it sets window.__MEETINGOPS_WEBMCP_POLYFILL and
+ * The polyfill is IDENTIFIED: it sets window.__KESTREL_WEBMCP_POLYFILL and
  * logs a console notice. The UI status badge shows "polyfill" vs "native" so
  * no one can mistake polyfilled registration for native support (honesty
  * rule: never claim unverified capability).
@@ -46,15 +46,15 @@ class PolyfilledModelContext extends EventTarget implements WebMCP.ModelContext 
 
 declare global {
   interface Window {
-    __MEETINGOPS_WEBMCP_POLYFILL?: true;
+    __KESTREL_WEBMCP_POLYFILL?: true;
     /** Test/verification hook: the polyfill's original tool definitions. */
-    __MEETINGOPS_POLYFILL_TOOLS__?: Map<string, WebMCP.ModelContextTool>;
+    __KESTREL_POLYFILL_TOOLS__?: Map<string, WebMCP.ModelContextTool>;
   }
 }
 
 export function installWebmcpPolyfillIfUnsupported(): boolean {
   // Already polyfilled (StrictMode re-runs this effect) — idempotent.
-  if (typeof window !== 'undefined' && window.__MEETINGOPS_WEBMCP_POLYFILL === true) return true;
+  if (typeof window !== 'undefined' && window.__KESTREL_WEBMCP_POLYFILL === true) return true;
   if (typeof document !== 'undefined' && document.modelContext) return false;
   const ctx = new PolyfilledModelContext();
   // Test/verification hook (documented in the polyfill header): lets test
@@ -66,7 +66,7 @@ export function installWebmcpPolyfillIfUnsupported(): boolean {
     return nativeRegister(tool, options);
   };
   if (typeof window !== 'undefined') {
-    window.__MEETINGOPS_POLYFILL_TOOLS__ = toolRegistry;
+    window.__KESTREL_POLYFILL_TOOLS__ = toolRegistry;
   }
   Object.defineProperty(document, 'modelContext', {
     value: ctx,
@@ -74,10 +74,10 @@ export function installWebmcpPolyfillIfUnsupported(): boolean {
     writable: false,
   });
   if (typeof window !== 'undefined') {
-    window.__MEETINGOPS_WEBMCP_POLYFILL = true;
+    window.__KESTREL_WEBMCP_POLYFILL = true;
   }
   console.info(
-    '[MeetingOps] Native document.modelContext not detected — installing the labeled MeetingOps dev polyfill (D-013). Tool calls in this mode are real API calls; native interoperability must be verified separately (docs/webmcp-native-verification.md).',
+    '[Kestrel] Native document.modelContext not detected — installing the labeled Kestrel dev polyfill (D-013). Tool calls in this mode are real API calls; native interoperability must be verified separately (docs/webmcp-native-verification.md).',
   );
   return true;
 }

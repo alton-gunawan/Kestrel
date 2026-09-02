@@ -1,10 +1,10 @@
 /**
  * Integration abstraction contracts.
  *
- * Source of truth: docs/MeetingOps_Perubahan_Arah_Produk_WebApp_First_WebMCP_Integration_Abstraction.md
+ * Source of truth: docs/Kestrel_Perubahan_Arah_Produk_WebApp_First_WebMCP_Integration_Abstraction.md
  * (sections 4–5). Integrations are organized by *capability*, never by
  * vendor implementation. Provider-specific objects are mapped into canonical
- * MeetingOps concepts (CalendarContext, TranscriptInput, Decision, ActionItem,
+ * Kestrel concepts (CalendarContext, TranscriptInput, Decision, ActionItem,
  * FollowUp, ExternalReference). The domain model does NOT know about
  * "Fathom Action Items" or "Linear Action Items" as core entities.
  *
@@ -139,7 +139,7 @@ export const integrationEventSchema = z.strictObject({
 });
 export type IntegrationEvent = z.infer<typeof integrationEventSchema>;
 
-/** Canonical link from a MeetingOps entity to a provider-side object. */
+/** Canonical link from a Kestrel entity to a provider-side object. */
 export const externalReferenceSchema = z.strictObject({
   id: idSchema,
   providerId: z.enum(INTEGRATION_PROVIDERS),
@@ -266,9 +266,12 @@ export const updateIntegrationConfigRequestSchema = z.strictObject({
   idempotencyKey: idempotencyKeySchema,
 });
 
-/** Incoming provider webhook — UNTRUSTED. Event id drives idempotency. */
+/**
+ * Incoming provider webhook — UNTRUSTED. The provider id comes from the URL
+ * path (POST /api/integrations/webhooks/:providerId), not from the body, so
+ * it cannot be spoofed by the payload. Event id drives idempotency.
+ */
 export const ingestWebhookRequestSchema = z.strictObject({
-  providerId: z.enum(INTEGRATION_PROVIDERS),
   eventId: z.string().min(1).max(300),
   eventType: z.string().min(1).max(120),
   payload: z.unknown(),

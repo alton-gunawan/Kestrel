@@ -1,6 +1,6 @@
 import { defineConfig } from 'drizzle-kit';
 
-const url = process.env.DATABASE_URL ?? 'postgresql://localhost:5432/meetingops_dev';
+const url = process.env.DATABASE_URL ?? 'postgresql://localhost:5432/kestrel_dev';
 
 export default defineConfig({
   schema: './src/db/schema.ts',

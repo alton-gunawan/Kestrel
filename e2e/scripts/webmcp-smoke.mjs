@@ -44,7 +44,7 @@ const run = async () => {
     if (tools.length === 0) return { error: 'no tools' };
     // The draft API: agents call tools via the client; the page-side executor
     // is reachable through the polyfill test hook.
-    const hook = window.__MEETINGOPS_POLYFILL_TOOLS__;
+    const hook = window.__KESTREL_POLYFILL_TOOLS__;
     if (!hook) return { error: 'no test hook' };
     const tool = hook.get('get_today_overview');
     return tool ? await tool.execute({}) : { error: 'tool missing' };
@@ -53,7 +53,7 @@ const run = async () => {
 
   // 3. Golden flow: find a slot first, then propose at that slot.
   const slotResult = await page.evaluate(async () => {
-    const hook = window.__MEETINGOPS_POLYFILL_TOOLS__;
+    const hook = window.__KESTREL_POLYFILL_TOOLS__;
     const find = hook.get('find_available_slots');
     const now = new Date();
     const todayIso = now.toISOString().slice(0, 10);
@@ -70,7 +70,7 @@ const run = async () => {
   console.log('first slot:', firstSlot);
 
   const proposalResult = await page.evaluate(async (slotStart) => {
-    const hook = window.__MEETINGOPS_POLYFILL_TOOLS__;
+    const hook = window.__KESTREL_POLYFILL_TOOLS__;
     const tool = hook.get('prepare_meeting_proposal');
     return await tool.execute({
       title: 'WebMCP smoke meeting',
@@ -93,7 +93,7 @@ const run = async () => {
   const proposalId = proposalResult?.data?.proposal?.id;
   if (proposalId) {
     const execResult = await page.evaluate(async (pid) => {
-      const hook = window.__MEETINGOPS_POLYFILL_TOOLS__;
+      const hook = window.__KESTREL_POLYFILL_TOOLS__;
       const tool = hook.get('create_meeting');
       return await tool.execute({ proposalId: pid, idempotencyKey: 'smoke-exec-1' });
     }, proposalId);

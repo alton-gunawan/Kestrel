@@ -1,5 +1,5 @@
 /**
- * MeetingOps web app shell: Astryx AppShell + SideNav + routes.
+ * Kestrel web app shell: Astryx AppShell + SideNav + routes.
  * React Router 8 (library mode via BrowserRouter in main.tsx).
  */
 import { useEffect, useState } from 'react';
@@ -21,6 +21,7 @@ import {
   FolderOpen,
   Gavel,
   ListChecks,
+  Plug,
   Robot,
   ShieldCheck,
   Sparkle,
@@ -34,6 +35,7 @@ import { ProposalsPage } from './pages/ProposalsPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { ActionsPage } from './pages/ActionsPage';
 import { AgentActivityPage } from './pages/AgentActivityPage';
+import { IntegrationsPage } from './pages/IntegrationsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { sx } from './ui/sx';
 import * as styles from './styles/app.styles';
@@ -43,6 +45,7 @@ const NAV_ITEMS = [
   { to: '/meetings', label: 'Meetings', icon: <CalendarCheck /> },
   { to: '/actions', label: 'Actions', icon: <CheckSquare /> },
   { to: '/projects', label: 'Projects', icon: <FolderOpen /> },
+  { to: '/integrations', label: 'Integrations', icon: <Plug /> },
   { to: '/proposals', label: 'Proposals', icon: <ShieldCheck /> },
   { to: '/settings', label: 'Settings', icon: <ListChecks /> },
 ];
@@ -122,7 +125,7 @@ export default function App(): React.ReactNode {
   if (!sessionReady) {
     return (
       <div className={sx(styles.bootScreen)}>
-        <Spinner size="lg" label="Starting MeetingOps" />
+        <Spinner size="lg" label="Starting Kestrel" />
       </div>
     );
   }
@@ -134,7 +137,7 @@ export default function App(): React.ReactNode {
         <div>
           <div className={sx(styles.topBar)}>
             <Text size="lg" weight="semibold">
-              MeetingOps
+              Kestrel
             </Text>
             <Text size="sm" color="secondary">
               meetings → execution · agent-proposed, human-approved
@@ -146,7 +149,7 @@ export default function App(): React.ReactNode {
           </div>
         </div>
         <div className={sx(styles.shellBody)}>
-          <SideNav aria-label="MeetingOps navigation">
+          <SideNav aria-label="Kestrel navigation">
             {NAV_ITEMS.map((item) => (
               <SideNavItem
                 key={item.to}
@@ -174,6 +177,7 @@ export default function App(): React.ReactNode {
               <Route path="/actions" element={<ActionsPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:id" element={<ProjectsPage />} />
+              <Route path="/integrations" element={<IntegrationsPage />} />
               <Route path="/decisions" element={<AgentActivityPage tab="decisions" />} />
               <Route path="/activity" element={<AgentActivityPage tab="activity" />} />
               <Route path="/settings" element={<SettingsPage />} />

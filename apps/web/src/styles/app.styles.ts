@@ -51,7 +51,7 @@ export const mainArea = stylex.create({
 
 export const spin = stylex.create({
   root: {
-    animation: 'meetingops-spin 1s linear infinite',
+    animation: 'kestrel-spin 1s linear infinite',
     display: 'inline-block',
   },
 });

@@ -18,6 +18,7 @@ import {
   findAvailableSlotsToolInputSchema,
   getCalendarContextToolInputSchema,
   getDecisionsToolInputSchema,
+  getIntegrationsToolInputSchema,
   getMeetingActivityToolInputSchema,
   getMeetingToolInputSchema,
   getOpenActionsToolInputSchema,
@@ -103,23 +104,23 @@ function mutateTool(def: {
 export const READ_TOOLS: ToolDefinition[] = [
   readTool({
     name: 'get_today_overview',
-    title: 'Get today’s MeetingOps overview',
+    title: 'Get today’s Kestrel overview',
     description:
       'Returns the current server date, ISO week bounds, the next scheduled meeting, meetings needing preparation, overdue action items, pending decisions, and pending proposal count. Use this first to ground “today” and “this week”.',
     schema: getTodayOverviewToolInputSchema,
   }),
   readTool({
     name: 'get_meeting',
-    title: 'Get a MeetingOps meeting with full detail',
+    title: 'Get a Kestrel meeting with full detail',
     description:
       'Returns one meeting with participants, agenda items, decisions, action items, follow-ups, linked project, and current revision. Use before proposing changes to an existing meeting.',
     schema: getMeetingToolInputSchema,
   }),
   readTool({
     name: 'get_calendar_context',
-    title: 'Get MeetingOps calendar context',
+    title: 'Get Kestrel calendar context',
     description:
-      'Returns meetings and busy intervals for the given inclusive date range (YYYY-MM-DD). This is MeetingOps’ local calendar domain model; it is not an external calendar.',
+      'Returns meetings and busy intervals for the given inclusive date range (YYYY-MM-DD). This is Kestrel’ local calendar domain model; it is not an external calendar.',
     schema: getCalendarContextToolInputSchema,
   }),
   readTool({
@@ -131,7 +132,7 @@ export const READ_TOOLS: ToolDefinition[] = [
   }),
   readTool({
     name: 'get_project_context',
-    title: 'Get MeetingOps project context',
+    title: 'Get Kestrel project context',
     description:
       'Returns a project with its unresolved blockers (open/blocked action items), overdue actions, recent decisions, and recent meetings. Use this to prepare an agenda grounded in real project state.',
     schema: getProjectContextToolInputSchema,
@@ -157,6 +158,13 @@ export const READ_TOOLS: ToolDefinition[] = [
       'Returns the real audit trail for a meeting: proposals, approvals, executions, verifications, and edits, with actor classification and timestamps.',
     schema: getMeetingActivityToolInputSchema,
   }),
+  readTool({
+    name: 'get_integrations',
+    title: 'Get Kestrel integration status',
+    description:
+      'Returns the provider catalog (capability, demo flag) and the live status of connected integrations (connected/disconnected/error, last sync). Read-only; connecting or disconnecting providers is a user action in the Kestrel UI, not a tool.',
+    schema: getIntegrationsToolInputSchema,
+  }),
 ];
 
 /* ------------------------------------------------------------------ */
@@ -168,7 +176,7 @@ export const PROPOSAL_TOOLS: ToolDefinition[] = [
     name: 'prepare_meeting_proposal',
     title: 'Prepare a meeting creation proposal',
     description:
-      'Creates a pending proposal to create a meeting (time, duration, participants, project, agenda). Does not change committed meeting state. A human must review and approve it in the MeetingOps UI before it can execute.',
+      'Creates a pending proposal to create a meeting (time, duration, participants, project, agenda). Does not change committed meeting state. A human must review and approve it in the Kestrel UI before it can execute.',
     schema: prepareMeetingProposalInputSchema,
   }),
   proposeTool({
@@ -274,6 +282,7 @@ export const REQUIRED_TOOL_NAMES: readonly string[] = [
   'get_open_actions',
   'get_decisions',
   'get_meeting_activity',
+  'get_integrations',
   'prepare_meeting_proposal',
   'update_meeting_proposal',
   'prepare_agenda_proposal',

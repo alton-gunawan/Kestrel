@@ -1,8 +1,8 @@
-# MeetingOps Agent Instructions
+# Kestrel Agent Instructions
 
 Read every file under `docs/` before coding. `docs/` is the project source of truth.
 
-Core: MeetingOps turns meetings into execution: Goal → Prepare → Propose → Human Review → Approve → Execute → Verify → Follow-up.
+Core: Kestrel turns meetings into execution: Goal → Prepare → Propose → Human Review → Approve → Execute → Verify → Follow-up.
 
 Hard rules:
 - React + Vite, not Next.js.

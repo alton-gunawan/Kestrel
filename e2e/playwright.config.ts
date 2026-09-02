@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: process.env.CI
     ? undefined
     : {
-        command: 'pnpm --filter @meetingops/api dev',
+        command: 'pnpm --filter @kestrel/api dev',
         url: `${API_BASE}/api/health`,
         reuseExistingServer: true,
         timeout: 30_000,

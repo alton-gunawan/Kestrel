@@ -16,7 +16,7 @@ import type {
   ProposalStatus,
   Project,
   User,
-} from '@meetingops/contracts';
+} from '@kestrel/contracts';
 import type { AuditChannel, AuditEventInput } from '../domain/audit.js';
 
 export interface MeetingFilter {
@@ -227,6 +227,121 @@ export interface SessionRepository {
   touch(id: string): Promise<void>;
 }
 
+/* ------------------------------ integrations ----------------------------- */
+
+export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
+
+export interface IntegrationConnectionRecord {
+  id: string;
+  providerId: string;
+  capability: string;
+  status: ConnectionStatus;
+  displayName: string;
+  scopes: string[];
+  config: Record<string, unknown> | null;
+  lastSyncAt: string | null;
+  lastError: { code: string; message: string; at: string } | null;
+  connectedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IntegrationEventRecord {
+  id: string;
+  connectionId: string;
+  providerId: string;
+  eventType: string;
+  status: 'ok' | 'error';
+  summary: string;
+  details: unknown;
+  occurredAt: string;
+}
+
+export interface ExternalReferenceRecord {
+  id: string;
+  providerId: string;
+  externalId: string;
+  externalUrl: string | null;
+  referenceType: string;
+  entityType: string;
+  entityId: string;
+  payload: unknown;
+  createdAt: string;
+}
+
+export interface IngestionRecordRow {
+  id: string;
+  providerId: string;
+  sourceEventId: string;
+  sourceEventType: string;
+  receivedAt: string;
+  payloadHash: string;
+  status: 'processed' | 'duplicate' | 'failed';
+  outputEntityType: string | null;
+  outputEntityId: string | null;
+  error: { code: string; message: string } | null;
+  createdAt: string;
+}
+
+export interface IntegrationRepository {
+  listConnections(): Promise<IntegrationConnectionRecord[]>;
+  findConnection(id: string): Promise<IntegrationConnectionRecord | null>;
+  findConnectionByProvider(providerId: string): Promise<IntegrationConnectionRecord | null>;
+  insertConnection(conn: {
+    id: string;
+    providerId: string;
+    capability: string;
+    displayName: string;
+    scopes: string[];
+    config: Record<string, unknown> | null;
+  }): Promise<IntegrationConnectionRecord>;
+  updateConnectionStatus(
+    id: string,
+    status: ConnectionStatus,
+    extra?: {
+      connectedAt?: Date;
+      lastSyncAt?: Date;
+      lastError?: { code: string; message: string; at: string } | null;
+      config?: Record<string, unknown>;
+    },
+  ): Promise<IntegrationConnectionRecord>;
+  recordEvent(event: {
+    id: string;
+    connectionId: string;
+    providerId: string;
+    eventType: string;
+    status: 'ok' | 'error';
+    summary: string;
+    details?: unknown;
+    occurredAt?: Date;
+  }): Promise<IntegrationEventRecord>;
+  listEvents(connectionId: string, limit?: number): Promise<IntegrationEventRecord[]>;
+  listAllEvents(limit?: number): Promise<IntegrationEventRecord[]>;
+  insertExternalReference(ref: {
+    id: string;
+    providerId: string;
+    externalId: string;
+    externalUrl: string | null;
+    referenceType: string;
+    entityType: string;
+    entityId: string;
+    payload?: unknown;
+  }): Promise<ExternalReferenceRecord>;
+  listExternalReferences(filter: { entityType?: string; entityId?: string }): Promise<ExternalReferenceRecord[]>;
+  findIngestion(providerId: string, sourceEventId: string): Promise<IngestionRecordRow | null>;
+  insertIngestion(rec: {
+    id: string;
+    providerId: string;
+    sourceEventId: string;
+    sourceEventType: string;
+    payloadHash: string;
+    status: 'processed' | 'duplicate' | 'failed';
+    outputEntityType?: string | null;
+    outputEntityId?: string | null;
+    error?: { code: string; message: string } | null;
+  }): Promise<IngestionRecordRow>;
+}
+
 export interface TransactionalRepos {
   meetings: MeetingRepository;
   decisions: DecisionRepository;
@@ -239,6 +354,7 @@ export interface TransactionalRepos {
   users: UserRepository;
   idempotency: IdempotencyRepository;
   sessions: SessionRepository;
+  integrations: IntegrationRepository;
 }
 
 /** A repository bundle bound to either the pool or an open transaction. */
