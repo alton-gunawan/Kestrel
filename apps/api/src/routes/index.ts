@@ -584,7 +584,7 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
     if (!project) throw new AppError('NOT_FOUND', `Project ${id} not found`);
     const meetings = await repos.meetings.list({ projectId: id });
     const actions = await repos.actions.listOpen({ projectId: id });
-    const decisions = (await db.sql`select d.* from decisions d join meetings m on m.id = d.meeting_id where m.project_id = ${id} order by d.recorded_at desc limit 20`);
+    const decisions = await repos.decisions.listByProject(id, 20);
     return { project, meetings, actions, decisions };
   });
 
@@ -594,15 +594,15 @@ export function registerRoutes(app: FastifyInstance, options: RouteOptions): voi
     await requireUser(repos, request);
     const query = request.query as Record<string, string | undefined>;
     if (query.meetingId) {
-      const rows = await db.sql`select * from decisions where meeting_id = ${query.meetingId} order by recorded_at desc limit 50`;
-      return { decisions: rows };
+      const decisions = await repos.decisions.listByMeeting(query.meetingId);
+      return { decisions };
     }
     if (query.projectId) {
-      const rows = await db.sql`select d.* from decisions d join meetings m on m.id = d.meeting_id where m.project_id = ${query.projectId} order by d.recorded_at desc limit 50`;
-      return { decisions: rows };
+      const decisions = await repos.decisions.listByProject(query.projectId);
+      return { decisions };
     }
-    const rows = await db.sql`select * from decisions order by recorded_at desc limit 50`;
-    return { decisions: rows };
+    const decisions = await repos.decisions.listAll(50);
+    return { decisions };
   });
 
   app.get('/api/activity', async (request) => {

@@ -41,10 +41,9 @@ import * as styles from './styles/app.styles';
 const NAV_ITEMS = [
   { to: '/', label: 'Overview', icon: <Sparkle /> },
   { to: '/meetings', label: 'Meetings', icon: <CalendarCheck /> },
-  { to: '/proposals', label: 'Proposals', icon: <ShieldCheck /> },
   { to: '/actions', label: 'Actions', icon: <CheckSquare /> },
   { to: '/projects', label: 'Projects', icon: <FolderOpen /> },
-  { to: '/activity', label: 'Agent activity', icon: <Robot /> },
+  { to: '/proposals', label: 'Proposals', icon: <ShieldCheck /> },
   { to: '/settings', label: 'Settings', icon: <ListChecks /> },
 ];
 

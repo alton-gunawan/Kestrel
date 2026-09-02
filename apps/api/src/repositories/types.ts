@@ -120,7 +120,9 @@ export class MissingEntityError extends Error {
 }
 
 export interface DecisionRepository {
+  listAll(limit?: number): Promise<Decision[]>;
   listByMeeting(meetingId: string): Promise<Decision[]>;
+  listByProject(projectId: string, limit?: number): Promise<Decision[]>;
   insert(decision: {
     id: string;
     meetingId: string;

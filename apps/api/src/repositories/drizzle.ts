@@ -408,12 +408,38 @@ export class DrizzleMeetingRepository implements MeetingRepository {
 export class DrizzleDecisionRepository implements DecisionRepository {
   constructor(private readonly db: Database) {}
 
+  async listAll(limit = 50): Promise<Decision[]> {
+    const rows = await this.db
+      .select()
+      .from(t.decisions)
+      .orderBy(desc(t.decisions.recordedAt))
+      .limit(limit);
+    return rows.map(mapDecision);
+  }
+
   async listByMeeting(meetingId: string): Promise<Decision[]> {
     const rows = await this.db
       .select()
       .from(t.decisions)
       .where(eq(t.decisions.meetingId, meetingId))
       .orderBy(desc(t.decisions.recordedAt));
+    return rows.map(mapDecision);
+  }
+
+  async listByProject(projectId: string, limit = 50): Promise<Decision[]> {
+    const rows = await this.db
+      .select({
+        id: t.decisions.id,
+        meetingId: t.decisions.meetingId,
+        title: t.decisions.title,
+        outcome: t.decisions.outcome,
+        recordedAt: t.decisions.recordedAt,
+      })
+      .from(t.decisions)
+      .innerJoin(t.meetings, eq(t.decisions.meetingId, t.meetings.id))
+      .where(eq(t.meetings.projectId, projectId))
+      .orderBy(desc(t.decisions.recordedAt))
+      .limit(limit);
     return rows.map(mapDecision);
   }
 
